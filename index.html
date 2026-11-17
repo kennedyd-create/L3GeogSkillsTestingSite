@@ -547,6 +547,14 @@ svg.chart{width:100%;height:auto;background:#fff;border:1.5px solid var(--ink)}
 @media (max-width:860px){ #task canvas.inset{max-height:30vh;width:auto;max-width:100%;display:block;margin:0 auto} }
 
 @media (pointer:coarse){ .chip{min-height:44px;display:inline-flex;align-items:center} .dmsrow input,#numIn,.grin{min-height:44px} }
+
+.infocard{border:1.5px solid var(--line,#c9d3df);border-radius:8px;background:#fff;padding:8px 12px}
+.infocard summary{cursor:pointer;font-family:var(--f-head);font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:12px;color:var(--ink-soft)}
+.infocard .infophoto{height:150px;background-size:cover;background-position:center;border-radius:6px;margin-top:8px}
+.infocard .note{margin:8px 0 4px;font-size:15.5px}
+.infocard .facts.info{margin:4px 0 2px;padding-left:18px;font-size:14.5px}
+.infocard .facts.info li{margin:2px 0}
+.infocard .pcap{font-size:11px;color:var(--ink-soft)}
 </style>
 </head>
 <body>
@@ -560,7 +568,7 @@ svg.chart{width:100%;height:auto;background:#fff;border:1.5px solid var(--ink)}
       <div class="stat" hidden><span>Flown</span><b id="hudKm">0 km</b></div>
       <button class="hud-btn teach" id="btnTeach" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="vertical-align:-3px"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg><span class="lbl-long"> Teach</span></button>
       <button class="hud-btn" id="btnSkills" type="button" title="Skills checklist and progress"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true" style="vertical-align:-3px"><path d="M4 6l2 2 3-3M4 13l2 2 3-3M4 20l2 2 3-3M12 7h8M12 14h8M12 21h8"/></svg><span class="lbl-long"> Skills</span></button>
-      <button class="hud-btn" id="btnJournal" type="button" title="Journal" aria-label="Journal"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="vertical-align:-3px"><path d="M5 3h12a2 2 0 0 1 2 2v16H7a2 2 0 0 1-2-2z"/><path d="M5 17a2 2 0 0 1 2-2h12M9 7h6"/></svg><span class="lbl-long"> Journal</span></button>
+      <button class="hud-btn" id="btnJournal" type="button" hidden title="Journal" aria-label="Journal"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="vertical-align:-3px"><path d="M5 3h12a2 2 0 0 1 2 2v16H7a2 2 0 0 1-2-2z"/><path d="M5 17a2 2 0 0 1 2-2h12M9 7h6"/></svg><span class="lbl-long"> Journal</span></button>
       <button class="hud-btn" id="btnMenu" type="button" title="Menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true" style="vertical-align:-3px"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span class="lbl-long"> Menu</span></button>
     </div>
   </header>
@@ -987,7 +995,7 @@ function scatter(f) {
   f.xt.forEach(v => s += `<line x1="${xs(v)}" x2="${xs(v)}" y1="${m.t}" y2="${m.t + H}" class="gl"/><text x="${xs(v)}" y="${m.t + H + 13}" class="ax" text-anchor="middle">${v}</text>`);
   for (let v = f.y0; v <= f.y1; v += f.ys) s += `<line x1="${m.l}" x2="${m.l + W}" y1="${ys(v)}" y2="${ys(v)}" class="gl"/><text x="${m.l - 5}" y="${ys(v) + 3}" class="ax" text-anchor="end">${v}</text>`;
   s += `<rect x="${m.l}" y="${m.t}" width="${W}" height="${H}" class="frame"/>`;
-  f.pts.forEach(p => { s += `<circle cx="${xs(p.x)}" cy="${ys(p.y)}" r="4.5" class="pt"/>${f.showLabels === false ? "" : `<text x="${xs(p.x) + (p.anchor ? -6 : 6)}" y="${ys(p.y) + (p.dy || -4)}" class="ax ptl" ${p.anchor ? `text-anchor="end"` : ""}>${esc(p.label)}</text>`}`; });
+  f.pts.forEach(p => { s += `<circle cx="${xs(p.x)}" cy="${ys(p.y)}" r="4.5" class="pt"/>${f.showLabels === false ? "" : `<text x="${xs(p.x) + (p.anchor === 2 ? 0 : p.anchor ? -6 : 6)}" y="${ys(p.y) + (p.dy || -4)}" class="ax ptl" ${p.anchor === 2 ? `text-anchor="middle"` : p.anchor ? `text-anchor="end"` : ""}>${esc(p.label)}</text>`}`; });
   s += `<text x="${m.l + W / 2}" y="${h - 6}" class="ax lbl" text-anchor="middle">${esc(f.xLabel)}</text><text x="12" y="${m.t + H / 2}" class="ax lbl" text-anchor="middle" transform="rotate(-90 12 ${m.t + H / 2})">${esc(f.yLabel)}</text>`;
   return s + `</svg>` + cap(esc(f.cap || ""), esc(f.src || ""));
 }
@@ -1134,7 +1142,7 @@ const PYR = {
 const pyrPct = (d, from, to) => { const t = sum(d.m) + sum(d.f); let s = 0; for (let i = from; i <= to; i++) s += d.m[i] + d.f[i]; return s / t * 100; };
 const dep = d => { const y = pyrPct(d, 0, 2), o = pyrPct(d, 13, 16), w = pyrPct(d, 3, 12); return { y, o, w, r: (y + o) / w * 100 }; };
 const TRI = [{ label: "New Zealand", a: 5, b: 19, c: 76, left: 1, dy: 5 }, { label: "United Kingdom", a: 1, b: 18, c: 81, left: 1, dy: -3 }, { label: "Germany", a: 1, b: 27, c: 72, left: 1, dy: 14 }, { label: "China", a: 23, b: 29, c: 48 }, { label: "India", a: 44, b: 25, c: 31 }, { label: "Ethiopia", a: 64, b: 10, c: 26, left: 1, dy: 4 }];
-const SCAT = [["Niger", 1.6, 62], ["Chad", 1.8, 53, 12], ["Nigeria", 5.9, 53, 12], ["Kenya", 5.8, 62, 4, 1], ["India", 9, 68], ["Bangladesh", 8, 73], ["South Africa", 15, 62, -7], ["Eq. Guinea", 17, 61, 14], ["Brazil", 18, 73, 12], ["China", 22, 78, 4, 1], ["Russia", 37, 70], ["Japan", 46, 84, -6, 1], ["NZ", 50, 82, 6, 1], ["USA", 76, 77, 14, 1], ["Norway", 90, 83, -8, 1]].map(p => ({ label: p[0], x: p[1], y: p[2], dy: p[3], anchor: p[4] }));
+const SCAT = [["Niger", 1.6, 62], ["Chad", 1.8, 53, 12], ["Nigeria", 5.9, 53, 12], ["Kenya", 5.8, 62, 4, 1], ["India", 9, 68], ["Bangladesh", 8, 73], ["South Africa", 15, 62, -7], ["Eq. Guinea", 17, 61, 14], ["Brazil", 18, 73, 12], ["China", 22, 78, 4, 1], ["Russia", 37, 70], ["Japan", 46, 84, -6, 1], ["NZ", 50, 82, 6, 1], ["USA", 76, 77, 14, 1], ["Norway", 90, 83, -9, 2]].map(p => ({ label: p[0], x: p[1], y: p[2], dy: p[3], anchor: p[4] }));
 const SYN_ST = [{ label: "A", lon: 168.35, lat: -46.41 }, { label: "B", lon: 174.76, lat: -36.85 }, { label: "C", lon: -176.56, lat: -43.95 }];
 const synP = st => window.FIGS.SYN.P(st.lon < 0 ? st.lon + 360 : st.lon, st.lat);
 const PT8 = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
@@ -1148,7 +1156,7 @@ const INSET_C = () => at(8.3, 2.55);
 window.GAME = {
   home: { name: "Oneroa, Waiheke Island", at: [-36.785, 175.008] },
   openAccess: true,
-  intro: "Three parts, with a percentage score at the end of each one. Eight cases in all, from the edges of the map to deep underground, and every senior geography skill. Each question is worth 10 points. Keep going until you get it right: every wrong answer costs 2 points, and a skipped question scores 0. Your percentage score builds as you go.",
+  intro: "A skills test in three parts, each with its own percentage score. Questions use maps, graphs, photos and data from real places, plus an invented topographic sheet. Some questions test one skill directly; others are written like NCEA exam questions, where you choose the answer that uses the resources best. Each question is worth 10 points: keep answering until you get it right. Each wrong answer costs 2 points (5 on a four-option multiple choice, so guessing doesn't pay), and a skipped question scores 0.",
   timeNote: "Do one part per lesson, in any order. Progress saves on this device, so you can stop and continue. Bring a calculator.",
   titlePhotos: ["socotra", "badab", "uyuni", "tsingy", "lencois", "oparara", "sondoong", "richat_iss", "rootbridge", "lalibela"],
   finale: "All three parts done. Here is your overall result.",
@@ -1205,15 +1213,15 @@ window.GAME = {
     ] },
 
   /* ───────────── CASE 1 ───────────── */
-  { id: "c1", code: "CASE 01", title: "Edges of the Map", region: "Remote places", photo: "tristan_photo",
-    blurb: "The world's most remote places.",
-    skills: ["DMS plotting", "Great-circle distance", "Direction on a real map", "Time zones"],
+  { id: "c1", code: "SECTION 1", title: "Location and distance", region: "Remote places", photo: "tristan_photo",
+    blurb: "Plotting latitude and longitude, measuring distance and travel time, time zones, choosing a graph, values, and describing a place using the resources.",
+    skills: ["Plotting lat/long (DMS)", "Measuring distance", "Time zones", "Choosing a graph", "Values", "Describing an environment"],
     outro: "Next: landscapes that look unreal.",
     stops: [
       { id: "e1", place: "Edinburgh of the Seven Seas, Tristan da Cunha", at: [-37.066667, -12.3], photo: "tristan_photo",
-        postcard: "The most remote inhabited island on Earth: about 230 people, one volcano, no airport. Position: 37°04′S 12°18′W.",
+        postcard: "The most remote inhabited island on Earth: fewer than 250 people, one volcano, no airport. Position: 37°04′S 12°18′W.",
         steps: [
-          { type: "coords", blind: true, dmsPin: true, prompt: "Plot <b>37°04′S 12°18′W</b>. The readout is off: zoom right in and use the grid. You need to be within 5 km.", target: [-37.066667, -12.3], tol: [2, 5, 250], hint: "It's in the South Atlantic, roughly halfway between South Africa and South America." },
+          { type: "coords", teach: "dms", blind: true, dmsPin: true, prompt: "Plot <b>37°04′S 12°18′W</b>. The readout is off: zoom right in and use the grid. You need to be within 5 km.", target: [-37.066667, -12.3], tol: [2, 5, 250], hint: "It's in the South Atlantic, roughly halfway between South Africa and South America." },
           { type: "num", kind: "Measure, then calculate", teach: "greatcircle", ruler: true, snapPts: () => [[-37.066667, -12.3], [-33.925, 18.42]], marks: () => [{ at: [-37.066667, -12.3], label: "A" }, { at: [-33.925, 18.42], label: "B" }], view: { pts: [[-37.066667, -12.3], [-33.925, 18.42]], max: 3 }, prompt: "Tristan's only link to the world is a supply ship from Cape Town. Use the map ruler to measure the great-circle distance from <b>Tristan (A)</b> to <b>Cape Town (B)</b>. The ship averages <b>20 km/h</b>, day and night. How many <b>days</b> does the voyage take? (1 decimal place)", answer: () => d3.geoDistance([-12.3, -37.066667], [18.42, -33.925]) * 6371 / 480, tol: 0.3, dp: 1, unit: "days", hint: "Days = distance ÷ (speed × 24).", explain: () => `About ${Math.round(d3.geoDistance([-12.3, -37.066667], [18.42, -33.925]) * 6371).toLocaleString("en-NZ")} km ÷ (20 × 24) ≈ ${(d3.geoDistance([-12.3, -37.066667], [18.42, -33.925]) * 6371 / 480).toFixed(1)} days. Weather often makes it longer: about a week.` },
           { type: "num", fig: { kind: "photo", id: "tristan_map", ruler: true, cap: "Street map of Edinburgh of the Seven Seas" }, prompt: "Use the scale bar on the real map. How far is it in a straight line from the <b>Crawfish factory (3)</b> to <b>St Mary's Church (5)</b>? Use the figure ruler to measure both the scale bar and the distance.", answer: 440, tol: 90, unit: "m", explain: "The line is about 2.2 times the length of the 200 m scale bar." },
           { type: "compass", teach: "bearing", fig: { kind: "photo", id: "tristan_map", cap: "Street map of Edinburgh of the Seven Seas" }, prompt: "On this map, which direction is <b>St Mary's School (6)</b> from <b>Camogli Hospital (2)</b>? Check the north arrow.", answer: ["NE"], explain: "North is at the top of this map, so up and to the right is north-east." },
@@ -1221,17 +1229,17 @@ window.GAME = {
         ],
         facts: ["Tristan's volcano, Queen Mary's Peak, is 2,062 m high and last erupted in 1961; the whole island was evacuated.", "The island's crawfish (rock lobster) fishery pays for most of its public services.", "Almost every islander shares one of a handful of surnames, most dating from the first settlers."] },
       { id: "e2", place: "Point Nemo", at: [-48.876667, -123.393333], photo: null, nomark: false,
-        postcard: "No photo here: there's nothing to photograph. This is the point in the ocean farthest from any land. Position: 48°52′36″S 123°23′36″W.",
+        postcard: "The point in the ocean farthest from any land. Position: 48°52′36″S 123°23′36″W.",
         steps: [
-          { type: "coords", blind: true, dmsPin: true, prompt: "Plot Point Nemo: <b>48°52′36″S 123°23′36″W</b>. Zoom right in: you need to be within 5 km.", target: [-48.876667, -123.393333], tol: [2, 5, 250], hint: "South Pacific, a long way east of New Zealand and west of Chile." },
+          { type: "coords", teach: "dms", blind: true, dmsPin: true, prompt: "Plot Point Nemo: <b>48°52′36″S 123°23′36″W</b>. Zoom right in: you need to be within 5 km.", target: [-48.876667, -123.393333], tol: [2, 5, 250], hint: "South Pacific, a long way east of New Zealand and west of Chile." },
           { type: "num", kind: "Calculate distance", prompt: "The nearest land is tiny Ducie Island, at <b>24°40′S</b>, almost due north of Point Nemo (<b>48°52′36″S</b>). Work out the difference in latitude, turn it into minutes, then use <b>1′ ≈ 1.852 km</b>. How far is it? (No ruler.)", answer: 2690, tol: 60, unit: "km", explain: "48°52′36″ − 24°40′ = 24°12′36″ ≈ 1452.6′. 1452.6 × 1.852 ≈ 2,690 km." },
           { type: "num", kind: "Calculate", prompt: "The International Space Station orbits about <b>400 km</b> up. The nearest land to Point Nemo, Ducie Island, is about <b>2,690 km</b> away. When the ISS passes overhead, how many times further away is the nearest land than the astronauts? (1 decimal place)", answer: 6.7, tol: 0.15, dp: 1, unit: "times", explain: "2,690 ÷ 400 ≈ 6.7. The astronauts are the nearest humans. Old spacecraft are deliberately crashed here: it's a 'spacecraft cemetery'." }
         ],
-        facts: ["Point Nemo is about 2,700 km from the nearest land: Ducie Island to the north, Motu Nui to the north-east and Maher Island to the south.", "It's named after Captain Nemo in Jules Verne's novel.", "Over 250 spacecraft, including the Mir space station, lie on the seabed nearby."] },
+        facts: ["Point Nemo's nearest land is three tiny islands: Ducie Island to the north, Motu Nui to the north-east and Maher Island to the south.", "It's named after Captain Nemo in Jules Verne's novel.", "Over 250 spacecraft, including the Mir space station, lie on the seabed nearby."] },
       { id: "e3", place: "The Diomede Islands", at: [65.77, -169.0], photo: "diomede_photo",
         postcard: "Two islands 4 km apart, in the strait between two continents. One is Russian, one belongs to the USA. Stand on one and you look across into yesterday.",
         steps: [
-          { type: "mc", fig: { kind: "photo", id: "diomede_sat", cap: "Satellite image of the Diomede Islands (north is up)" }, q: "Big Diomede (Russia) covers about 29 km² and Little Diomede (USA) about 7 km². Use the image and the sizes. Which statement is correct?", options: ["The left island is Russian, and it is west of the date line", "The left island is Russian, and it is east of the date line", "The right island is Russian, and it is west of the date line", "The right island is Russian, and it is east of the date line"], answer: 0, explain: "Big Diomede is the larger, western island. The border and the date line run between them." },
+          { type: "mc", fig: { kind: "photo", id: "diomede_sat", cap: "Satellite image of the Diomede Islands (north is up)" }, q: "Big Diomede (Russia) covers about 29 km² and Little Diomede (USA) about 7 km². The International Date Line runs between them. Use the image and the sizes. Which statement is correct?", options: ["The left island is Russian, and it is west of the date line", "The left island is Russian, and it is east of the date line", "The right island is Russian, and it is west of the date line", "The right island is Russian, and it is east of the date line"], answer: 0, explain: "Big Diomede is the larger, western island. The border and the date line run between them." },
           { type: "pin", kind: "Find it from clues", prompt: "No coordinates this time. Find the islands from the clues: <b>in the middle of the narrow strait between Russia and Alaska, just south of the Arctic Circle, right where the date line runs.</b>", target: [65.77, -169.0], tol: [60, 150, 400], hint: "Follow the 180° line north until Asia and North America almost touch." },
           { type: "mc", q: "Little Diomede uses UTC−9 and Big Diomede uses UTC+12. When it is <b>10:00 Monday</b> on Little Diomede, what time is it on Big Diomede?", options: ["07:00 Tuesday", "07:00 Monday", "13:00 Sunday", "22:00 Monday"], answer: 0, explain: "The difference is 21 hours. 10:00 + 21 h = 07:00 the next day. (In the northern summer Little Diomede moves to UTC−8, so the gap shrinks to 20 h.) That's why they're nicknamed Tomorrow Island and Yesterday Island." },
           { type: "num", signFree: true, prompt: "Big Diomede is at 169°03′W. How many hours behind Greenwich is its <b>sun time</b>? (1 decimal place)", answer: 11.3, tol: 0.05, dp: 1, unit: "hours", explain: "169.05 ÷ 15 = 11.27 h behind. Its clock is set to UTC+12, so Russia counts it as ahead. Time zones are political, not just geographical." }
@@ -1240,9 +1248,9 @@ window.GAME = {
     ] },
 
   /* ───────────── CASE 2 ───────────── */
-  { id: "c2", code: "CASE 02", title: "Strange Lands", region: "Surreal landscapes", photo: "socotra",
-    blurb: "Landscapes that look fake: dragon trees, rust-red terraces, a giant stone eye, a forest of stone knives, a desert full of lagoons and a salt flat full of lithium.",
-    skills: ["Reading DMS from a grid", "Latitude distance", "Climate graphs", "Perspectives & impacts", "Sustainability judgements"],
+  { id: "c2", code: "SECTION 2", title: "Landscapes and issues", region: "Unusual landscapes", photo: "socotra",
+    blurb: "Reading positions, scale, photos and climate graphs, then describing environments and making perspectives, impacts and sustainability judgements about lithium mining.",
+    skills: ["Reading lat/long from a grid", "Plotting lat/long", "Scale", "Photo interpretation", "Climate graphs", "Describing an environment", "Perspectives & impacts", "Sustainability judgements"],
     outro: "On to the next case.",
     stops: [
       { id: "x1", place: "Socotra, Yemen", at: [12.5, 53.9], photo: "socotra",
@@ -1258,7 +1266,7 @@ window.GAME = {
       { id: "x2", place: "Badab-e Surt, Iran", at: [36.354722, 53.856389], photo: "badab",
         postcard: "Steps of red, orange and yellow pools down a mountainside. Position: 36°21′17″N 53°51′23″E.",
         steps: [
-          { type: "num", kind: "Distance along a parallel", prompt: "Lines of longitude get closer together towards the poles. At about <b>36°N</b>, 1° of longitude ≈ 111 km × cos 36° ≈ <b>90 km</b>. Tehran is at <b>51°25′E</b> and Badab-e Surt at <b>53°51′E</b>. About how many km <b>further east</b> is Badab-e Surt?", answer: 219, tol: 6, unit: "km", hint: "Find the difference in longitude, turn the minutes into a decimal of a degree, then multiply by 90.", explain: "53°51′ − 51°25′ = 2°26′ = 2.43°. 2.43 × 90 ≈ 219 km. At the Equator the same gap would be about 270 km." },
+          { type: "num", kind: "Distance along a parallel", teach: "dms", prompt: "Lines of longitude get closer together towards the poles. At about <b>36°N</b>, 1° of longitude ≈ 111 km × cos 36° ≈ <b>90 km</b>. Tehran is at <b>51°25′E</b> and Badab-e Surt at <b>53°51′E</b>. About how many km <b>further east</b> is Badab-e Surt?", answer: 219, tol: 6, unit: "km", hint: "Find the difference in longitude, turn the minutes into a decimal of a degree, then multiply by 90.", explain: "53°51′ − 51°25′ = 2°26′ = 2.43°. 2.43 × 90 ≈ 219 km. At the Equator the same gap would be about 270 km." },
           { type: "coords", blind: true, dmsPin: true, prompt: "Plot <b>36°21′17″N 53°51′23″E</b>. Zoom right in: you need to be within 5 km.", target: [36.354722, 53.856389], tol: [2, 5, 250], hint: "Northern Iran, in the mountains just south of the Caspian Sea." },
           { type: "mc", fig: { kind: "photo", id: "badab", cap: "Terraces at Badab-e Surt" }, q: "Two mineral springs feed these terraces. What gives one of them its rusty red and orange colour?", options: ["Iron oxide in the water", "Red algae from the sea", "Volcanic lava", "Copper from mining"], answer: 0, explain: "Iron-rich spring water oxidises (rusts) as it meets the air, staining the rock." },
           { type: "mc", q: "How did the stepped pools form?", options: ["Minerals (travertine) drop out of the flowing spring water and slowly build rims", "Glaciers scraped the hillside into steps during the last ice age, then melted away", "Farmers cut terraces into the slope for rice centuries ago and lined them with stone", "Earthquakes cracked the hillside into a series of flat steps along small fault lines"], answer: 0, explain: "Calcium carbonate drops out of the water, building terraces over thousands of years." },
@@ -1291,7 +1299,7 @@ window.GAME = {
         ],
         facts: ["The lagoons fill during the wet season and are at their fullest from about June to September, just after the rains.", "Some lagoons have fish whose eggs survive the dry season buried in mud.", "The park covers about 1,550 km²."] },
       { id: "x6", place: "Salar de Uyuni, Bolivia", at: [-20.2, -67.5], photo: "uyuni",
-        postcard: "The world's largest salt flat. After rain it becomes a giant mirror. Under the crust lies one of the world's biggest stores of lithium, the metal in phone and car batteries.",
+        postcard: "The world's largest salt flat, at about 3,656 m on the Altiplano of south-west Bolivia, about 100 km from the Chilean border. It gets under 200 mm of rain a year. Under the crust lies one of the world's biggest stores of lithium, the metal in phone and car batteries.",
         steps: [
           { type: "pin", kind: "Find it from clues", prompt: "Find it from the clues: <b>the world's largest salt flat, on the high Altiplano plateau of south-west Bolivia, near the border with Chile.</b>", target: [-20.2, -67.5], tol: [50, 120, 350], hint: "Bolivia is landlocked, in the centre of South America. Look in its south-west corner." },
           { type: "mc", fig: { kind: "photo", id: "uyuni_sat", cap: "Satellite image of the Altiplano (north is up)", labels: [[34, 44, "A"], [48, 68, "B"], [63, 29, "C"]] }, q: "The Salar de Uyuni is the largest salt flat in the world. Which label marks it?", options: ["B", "A", "C"], answer: 0, explain: "B is the biggest white area. A is the smaller Salar de Coipasa; C is Lake Poopó." },
@@ -1308,9 +1316,9 @@ window.GAME = {
     ] },
 
   /* ───────────── CASE 3 ───────────── */
-  { id: "c3", code: "CASE 03", title: "The Underworld", region: "Caves & karst", photo: "sondoong",
-    blurb: "Limestone arches, glow-worm grottoes, the biggest cave passage on Earth and a ring of sinkholes.",
-    skills: ["Scale in photos", "Karst processes", "Perspectives", "Pattern on a map"],
+  { id: "c3", code: "SECTION 1", title: "Caves and karst", region: "Caves & karst", photo: "sondoong",
+    blurb: "Using photos as evidence, scale in photos, describing a spatial pattern, and perspectives on a limestone landscape.",
+    skills: ["Photos as evidence", "Scale in photos", "Pattern on a map", "Perspectives", "Describing an environment"],
     outro: "Next: images from the air and from space.",
     stops: [
       { id: "u1", place: "Ōpārara Arches, Kahurangi", at: [-41.16, 172.19], photo: "oparara",
@@ -1352,10 +1360,10 @@ window.GAME = {
           { type: "pin", kind: "Find it from clues", prompt: "Find the cave from the clues: <b>high in the western Caucasus Mountains, close to the north-east shore of the Black Sea.</b>", target: [43.41, 40.36], tol: [50, 130, 350], hint: "Find the Black Sea, then its north-east corner." }
         ],
         facts: ["Veryovkina reached 2,212 m deep in 2018, the deepest cave known.", "Its neighbour Krubera (Voronya) Cave is over 2,190 m deep.", "Cavers spend weeks underground, camping at depths like −1350 m."] },
-      { id: "u5", place: "Ring of Cenotes, Yucatán", at: [20.661, -88.551], photo: "cenote",
-        postcard: "A sinkhole open to the sky, with vines hanging down to the water. Thousands of these line up in a strange shape.",
+      { id: "u5", place: "Cenotes, Yucatán", at: [20.661, -88.551], photo: "cenote",
+        postcard: "A sinkhole open to the sky, with vines hanging down to the water. Thousands of these are found across the peninsula.",
         steps: [
-          { type: "mc", fig: { kind: "photo", id: "cenote_ring", cap: "Diagram of the Yucatán Peninsula: arrows mark cenotes (sinkholes)" }, q: "Describe the <b>pattern</b> of cenotes shown by the arrows.", options: ["A curved arc (half a ring) across the north-west of the peninsula", "A straight line along the whole northern coastline of the peninsula", "Randomly scattered dots with no clear pattern anywhere on the peninsula", "A tight cluster around the city of Cancún on the east coast"], answer: 0, explain: "Always describe a pattern's shape, where it is, and its extent." },
+          { type: "mc", fig: { kind: "photo", id: "cenote_ring", cap: "Diagram of the Yucatán Peninsula: arrows mark cenotes (sinkholes)" }, q: "Describe the <b>pattern</b> of cenotes shown by the arrows.", options: ["Peripheral: around the edge of a roughly circular area", "Linear: in one straight line along the coast", "Clustered: bunched together in one small area", "Clustered: in several small groups near the coast"], answer: 0, explain: "The cenotes sit around the edge of a circle roughly 170–180 km across, centred near Chicxulub on the north coast: a peripheral pattern (only the southern half is on land). They mark the buried rim of the Chicxulub impact crater." },
           { type: "mc", q: "The arc traces the buried rim of the Chicxulub crater. What made the crater?", options: ["The asteroid impact 66 million years ago, linked to the dinosaurs' extinction", "A huge volcanic eruption that collapsed into a caldera about 2 million years ago", "A giant glacier that carved a ring-shaped basin in the last ice age", "A huge earthquake in 1985 that cracked the limestone into a ring"], answer: 0, explain: "Fractured rock around the crater rim lets groundwater dissolve the limestone, so sinkholes cluster along it." },
           { type: "pin", kind: "Find it from clues", prompt: "Find Cenote Ik Kil from the clues: <b>inland in the north of Mexico's Yucatán Peninsula, beside the Maya city of Chichén Itzá, just south-east of the ring of cenotes on the diagram.</b>", target: [20.661, -88.551], tol: [30, 80, 250], hint: "Yucatán is the thumb of land sticking north into the Gulf of Mexico." }
         ],
@@ -1363,9 +1371,9 @@ window.GAME = {
     ] },
 
   /* ───────────── CASE 4 ───────────── */
-  { id: "c4", code: "CASE 04", title: "Eyes in the Sky", region: "Aerial & satellite images", photo: "amazon_meeting",
-    blurb: "Aerial photos and satellite images, checked against the map.",
-    skills: ["Types of image", "Satellite change over time", "False colour", "Land use from the air", "Photo vs relief map", "Reading DMS from a grid"],
+  { id: "c4", code: "SECTION 2", title: "Aerial and satellite images", region: "Aerial & satellite images", photo: "amazon_meeting",
+    blurb: "Types of image, change shown by satellite images, reading lat/long from a grid, and describing land use from an aerial photo.",
+    skills: ["Types of image", "Satellite change over time", "Using evidence", "Reading lat/long from a grid", "Photo vs relief map", "Describing land use"],
     outro: "Next: a full topographic map.",
     stops: [
       { id: "a1", place: "Meeting of the Waters, Manaus", at: [-3.136, -59.9], photo: "amazon_meeting",
@@ -1388,7 +1396,7 @@ window.GAME = {
       { id: "a3", place: "Sindh, Pakistan", at: [26.42, 67.67], photo: "sg_pakistan",
         brief: "Two satellite images of the same place, one year apart. Work out what changed.",
         steps: [
-          { type: "mc", fig: { kind: "photo", id: "sg_pakistan", cap: "Sindh, Pakistan, 27 August 2021 (left) and 27 August 2022 (right). MODIS false colour" }, q: "Compare the two false-colour images. What is the biggest change from 2021 to 2022?", options: ["Huge areas of farmland are flooded", "Crops are greener after a good monsoon", "The Indus has moved its course eastward", "Farmland has dried out into bare desert"], answer: 0, explain: "The dark blue spreading west of the Indus is water. (In this colour scheme, clouds show as pale cyan.) At their peak the 2022 floods covered about a fifth of Sindh province (roughly a tenth of all Pakistan, from satellite mapping)." },
+          { type: "mc", fig: { kind: "photo", id: "sg_pakistan", cap: "Sindh, Pakistan, 27 August 2021 (left) and 27 August 2022 (right). Key: bright green = crops and vegetation · dark blue = water · pale cyan = cloud · fawn = bare dry ground", labels: [[23, 47, "Indus"]] }, q: "Compare the two false-colour images. What is the biggest change from 2021 to 2022?", options: ["Huge areas of farmland are flooded", "Crops are greener after a good monsoon", "The Indus has moved its course eastward", "Farmland has dried out into bare desert"], answer: 0, explain: "The dark blue spreading west of the Indus is water. (In this colour scheme, clouds show as pale cyan.) At their peak the 2022 floods covered about a fifth of Sindh province (roughly a tenth of all Pakistan, from satellite mapping)." },
           { type: "mc", q: "Why use a false-colour image instead of a true-colour photo for floods?", options: ["Water, plants and bare ground stand out more clearly", "It is cheaper to collect than a normal colour photo", "It shows the weather forecast for the next few days", "It makes very old images look sharper and more modern"], answer: 0, explain: "Different wavelengths, including infrared, make water very dark and plants very bright." },
           { type: "pin", kind: "Find it from clues", prompt: "Find Lake Manchar, the lake at the centre of the flooding, from the clues: <b>in Sindh, southern Pakistan, just west of the Indus River, about 200 km north of the Arabian Sea coast.</b>", target: [26.42, 67.67], tol: [40, 100, 300], hint: "Turn on Rivers & lakes and follow the Indus up from its mouth near Karachi." },
           { type: "mc", kind: "Choose the graph", teach: "graphs", fig: { kind: "table", head: ["Month", "Apr", "May", "Jun", "Jul", "Aug", "Sep"], rows: [["Rain above (+) or below (−) average (mm)", "−4", "−3", "−5", "+120", "+270", "+30"]], cap: "Sindh rainfall in 2022 compared with the monthly average", src: "Practice data (invented)" }, q: "Look at this data. Which type of graph would show it best?", options: GRAPHS, answer: 4, explain: "The values are above and below an average (zero line): a positive–negative bar graph shows both directions." },
@@ -1408,9 +1416,9 @@ window.GAME = {
     ] },
 
   /* ───────────── CASE 5 ───────────── */
-  { id: "c5", code: "CASE 05", title: "The Topo Sheet", region: "1:50 000 topographic sheet", photo: "topo:relief",
-    blurb: "A 1:50 000 topographic sheet of an invented island. Use the topo map, relief view, aerial view and ground photos side by side.",
-    skills: ["6- and 14-figure grid references", "Contours & height", "Gradient", "Cross-sections & vertical exaggeration", "Area from grid squares", "Grid bearings", "Aerial photo vs map"],
+  { id: "c5", code: "SECTION 3", title: "Topographic maps", region: "1:50 000 topographic sheet", photo: "topo:relief",
+    blurb: "A 1:50 000 topographic sheet of an invented island: grid references, contours, gradient, cross-sections, vertical exaggeration, bearings, area, and matching the map with aerial and ground views.",
+    skills: ["6- and 14-figure grid references", "Contours & height", "Gradient", "Cross-sections & vertical exaggeration", "Area from grid squares", "Grid bearings", "Aerial photo vs map", "Describing an environment"],
     outro: "That's the end of Part 2.",
     stops: [
       { id: "f1", photo: "topo:aerial", place: "Grid references", at: F.school.at, map: "topo",
@@ -1432,7 +1440,7 @@ window.GAME = {
           { type: "mc", topoMode: "topo", marks: () => [{ at: F.saddle.at, label: "X", x: 1 }], view: () => ({ pts: [F.kahu.at, F.pukenui.at], max: 4 }), q: "What landform is at <b>X</b>, between Mt Kahu and Pukenui?", options: ["Saddle", "Spur", "Valley", "Plateau"], answer: 0, explain: "A low point on a ridge between two higher summits: contours make an hourglass shape." }
         ],
         facts: ["Close contours mean steep land. Far apart means gentle.", "V-shaped contours point upstream in a valley and downhill on a spur.", "A gradient of 1 in 10 means 1 m up for every 10 m along."] },
-      { id: "f3", photo: "topo:aerial", place: "Bearings and sight lines", at: F.lighthouse.at, map: "topo",
+      { id: "f3", photo: "topo:aerial", place: "Bearings and area", at: F.lighthouse.at, map: "topo",
         brief: "Grid bearings are measured clockwise from grid north. The ruler shows distance and grid bearing.",
         steps: [
           { type: "num", ruler: true, snapPts: () => [F.lighthouse.at, F.pukenui.at], marks: () => [{ at: F.lighthouse.at, label: "A" }, { at: F.pukenui.at, label: "B" }], view: () => ({ pts: [F.lighthouse.at, F.pukenui.at], max: 4 }), prompt: "Measure the grid bearing from the <b>lighthouse (A)</b> to <b>Pukenui trig (B)</b>. Then give the <b>back bearing</b> from B to A.", answer: () => (tb(F.lighthouse.at, F.pukenui.at) + 180) % 360, tol: 4, circular: true, unit: "°", explain: () => `A to B is about ${pad3(tb(F.lighthouse.at, F.pukenui.at))}°. Add or subtract 180° for the back bearing.` },
@@ -1442,7 +1450,7 @@ window.GAME = {
         ],
         facts: ["Grid north and true north differ slightly on real maps.", "Back bearing = bearing ± 180°.", "Intervisibility checks are used to plan radio masts and wind farms."] },
       { id: "f4", photo: "topo:aerial", place: "Map, relief, aerial, ground", at: F.bridge.at, map: "topo",
-        brief: "The real test: match the same place across four kinds of resource.",
+        brief: "Use the topo map, the relief and aerial views, and a ground photo of the same area together.",
         steps: [
           { type: "pin", topoMode: "topo", lockMode: true, homeView: true, fig: () => ({ kind: "inset", mode: "aerial", center: INSET_C(), km: 1.6, cap: "Vertical aerial photo extract (1.6 km across, north at the top)" }), target: () => INSET_C(), tol: [0.15, 0.35, 0.8], nohint: true, prompt: "Find this aerial photo extract on the <b>topo map</b>. Click the centre of the area it shows.", reveal: "Matching roads, rivers and coastlines is the fastest way to locate a photo." },
           { type: "mc", fig: () => ({ kind: "pano", from: F.bridge.at, brg: 315, fov: 55, eye: 6, cap: "Photo taken from the bridge" }), q: "This ground photo was taken standing on the <b>bridge</b>. Which way was the camera facing? Check the map.", options: ["North-west, towards Mt Kahu and Pukenui", "South-east, towards Awamouth and the sea", "South-west, towards Te Rau and the forest", "North-east, towards Pā Hill and the coastal bluffs"], answer: 0, explain: "The highest peaks fill the view: the Kahu Range is north-west of the bridge." },
@@ -1453,9 +1461,9 @@ window.GAME = {
     ] },
 
   /* ───────────── CASE 6 ───────────── */
-  { id: "c6", code: "CASE 06", title: "Climate Extremes", region: "Climate graphs", photo: "rootbridge",
-    blurb: "Climate graphs from the coldest town, the wettest hills and the driest desert on Earth.",
-    skills: ["Reading climate graphs", "Annual range", "Percentages", "Matching graphs to places"],
+  { id: "c6", code: "SECTION 1", title: "Climate graphs", region: "Climate graphs", photo: "rootbridge",
+    blurb: "Reading climate graphs, describing climate with evidence, choosing a graph type and matching graphs to places.",
+    skills: ["Reading climate graphs", "Annual range", "Choosing a graph", "Describing climate", "Matching graphs to places"],
     outro: "Next: population maps and graphs.",
     stops: [
       { id: "k1", place: "Oymyakon, Siberia", at: [63.46, 142.79], photo: "oymyakon",
@@ -1477,7 +1485,7 @@ window.GAME = {
         ],
         facts: ["Nearby Mawsynram is often called the wettest place on Earth, with about 11,800 mm a year.", "Living root bridges are made from the roots of rubber fig trees and can last centuries.", "Despite the rain, the dry winter can bring water shortages."] },
       { id: "k3", place: "Atacama Desert, Chile", at: [-22.9, -68.2], photo: "atacama",
-        postcard: "NASA tests Mars rovers here. Three climate graphs have lost their labels: match each one to its station. One station on the map is a decoy.",
+        postcard: "NASA tests Mars rovers here. Graphs 1–3 come from three of the four stations marked on the map.",
         overlay: { kind: "marks", items: [{ label: "A", at: [-18.48, -70.32], name: "Arica, Chile" }, { label: "B", at: [78.22, 15.65], name: "Longyearbyen, Svalbard" }, { label: "C", at: [-3.1, -60.0], name: "Manaus, Brazil" }, { label: "D", at: [35.68, 139.69], name: "Tokyo, Japan" }] , dim: .2 },
         steps: [
           { type: "pick", fig: { kind: "climates", list: [CLIM.ar], cap: "Climate graph 1", src: "Approximate averages" }, accept: ["A"], view: { pts: [[-18.48, -70.32], [78.22, 15.65], [-3.1, -60.0], [-30, -80], [84, 30]], max: 3 }, prompt: "Which station, A, B or C, matches <b>Graph 1</b>? Click or tap it on the map.", explain: "Almost no rain all year and mild temperatures: Arica, on the coast of the Atacama. The cold Humboldt Current keeps it cool and dry." },
@@ -1489,9 +1497,9 @@ window.GAME = {
     ] },
 
   /* ───────────── CASE 7 ───────────── */
-  { id: "c7", code: "CASE 07", title: "People Patterns", region: "Population maps & graphs", photo: "agadez",
-    blurb: "A choropleth map, proportional circles and population pyramids.",
-    skills: ["Choropleth maps", "Proportional circles", "Population density", "Population pyramids", "Dependency ratio", "Percentage change"],
+  { id: "c7", code: "SECTION 2", title: "Population data", region: "Population maps & graphs", photo: "agadez",
+    blurb: "Choropleth maps, proportional circles, population density, population pyramids, dependency ratio and percentage change.",
+    skills: ["Choropleth maps", "Proportional circles", "Population density", "Population pyramids", "Dependency ratio", "Percentage change", "Describing an environment"],
     outro: "One case left.",
     stops: [
       { id: "p1", place: "Agadez, Niger", at: [16.97, 7.99], photo: "agadez",
@@ -1499,7 +1507,7 @@ window.GAME = {
         overlay: { kind: "choro", title: "Total fertility rate (births per woman)", breaks: [1.5, 2.1, 3, 4.5], data: TFR, forge: { "Japan": 5.1 }, src: "Approximate, c. 2021–23 (UN estimates). Rounded for teaching." },
         steps: [
           { type: "intro", title: "Choropleth maps", text: "A <b>choropleth</b> map shades areas by a value per area or per person. Darker usually means more.<br><br>Read the key carefully: each colour is a <b>class</b> (a range of values). Every country in one class looks the same, even if their values differ." },
-          { type: "country", rule: n => n === "Japan", prompt: "One country is <b>shaded wrongly</b>: its shading makes no sense for a rich, ageing country with very few births. Click it.", nudge: "Look for a dark country among pale neighbours in a wealthy region.", unforge: true, explain: "Japan's real rate is about 1.2, one of the lowest on Earth. The map is now corrected." },
+          { type: "country", rule: n => n === "Japan", prompt: "Data table, births per woman: <b>Niger 6.7 · Nigeria 5.1 · Egypt 2.9 · South Africa 2.3 · Japan 1.2</b>. One of these countries is <b>shaded wrongly</b> on the map. Compare the table with the key and click it.", nudge: "Check each country's shade against the key, one at a time.", unforge: true, explain: "Japan's real rate is about 1.2, one of the lowest on Earth. The map is now corrected." },
           { type: "country", rule: n => n === "Afghanistan", prompt: "Click the only country in <b>Asia</b> in the highest class (4.5 and over).", explain: "Afghanistan has about 4.6 births per woman." },
           { type: "mc", q: "Which class is New Zealand in?", options: ["1.5 – 2.1", "under 1.5", "2.1 – 3", "3 – 4.5"], answer: 0, explain: "About 1.6: below the replacement level of 2.1." },
           { type: "mc", q: "A weakness of choropleth maps: Russia's shading catches the eye far more than a small country's because…", options: ["large countries dominate the eye, though the shading shows a rate, not size", "Russia has a far larger population than almost every other country", "the key was drawn wrongly, so Russia was put in the wrong class", "the projection shrinks Russia, so its colour looks much stronger"], answer: 0, explain: "Big countries grab attention. Choropleths also hide differences inside a country and inside a class." },
@@ -1517,7 +1525,7 @@ window.GAME = {
         ],
         facts: ["Kinshasa is the largest French-speaking city in the world.", "The cities are a few kilometres apart across the Congo River.", "The UN's newest estimates use a different city definition and rank Jakarta and Dhaka above Tokyo. How you define a city changes the map."] },
       { id: "p3", place: "Iya Valley, Shikoku, Japan", at: [33.88, 133.84], photo: "iya",
-        postcard: "A vine bridge over a deep green gorge, in a valley where most residents are over 65. Three pyramids, three countries, no names.",
+        postcard: "A vine bridge over a deep green gorge, in a valley where most residents are over 65. Pyramids A–C show three different countries.",
         steps: [
           { type: "mc", fig: { kind: "pyramid", list: [PYR.A, PYR.B, PYR.C], max: 10, src: "Approximate, c. 2023" }, q: "Which pyramid is <b>Japan</b>?", options: ["Pyramid C", "Pyramid A", "Pyramid B"], answer: 0, explain: "Narrow base and wide top: few births and many older people, especially women over 80." },
           { type: "mc", fig: { kind: "pyramid", list: [PYR.A, PYR.B, PYR.C], max: 10, src: "Approximate, c. 2023" }, q: "Which stage of the demographic transition does <b>Pyramid A</b> show?", options: ["Stage 2: high birth rate, falling death rate", "Stage 4: low birth rate and low death rate", "Stage 5: births fall below deaths, population ageing", "Stage 1: high birth and death rates, very slow growth"], answer: 0, explain: "Pyramid A is Niger. Each age band is much bigger than the one above it, so births are high and far more children now survive: the population is growing fast (Stage 2). A Stage 1 pyramid is also wide at the base, but high death rates at every age keep it short and squat with almost no growth, and no country is in Stage 1 today." },
@@ -1528,9 +1536,9 @@ window.GAME = {
     ] },
 
   /* ───────────── CASE 8 ───────────── */
-  { id: "c8", code: "CASE 08", title: "Flows, Fronts & the Final Island", region: "Connections & weather", photo: "bouvet",
-    blurb: "Flow maps, triangular graphs, scatter graphs and a weather chart, then the final island.",
-    skills: ["Flow maps", "Triangular graphs", "Scatter graphs & correlation", "Synoptic charts & interpolation", "DMS plotting"],
+  { id: "c8", code: "SECTION 3", title: "Flows, graphs and weather maps", region: "Connections & weather", photo: "bouvet",
+    blurb: "Flow maps, a values continuum, triangular and scatter graphs, a synoptic weather chart, and perspectives and judgements.",
+    skills: ["Flow maps", "Values continuum", "Triangular graphs", "Scatter graphs & correlation", "Synoptic charts & interpolation"],
     stops: [
       { id: "z1", place: "Takapō / Lake Tekapo", at: [-44.004, 170.477], photo: "tekapo",
         postcard: "Under one of the darkest skies on Earth. Visitors come from all over the world to see the stars.",
@@ -1540,13 +1548,13 @@ window.GAME = {
           { type: "mc", q: "Australia sends far more visitors than anywhere else. Which idea explains this best?", options: ["Distance decay: closer places interact more", "Australia has a bigger population than any other visitor market", "Shared language and culture: Australians prefer English-speaking places", "Time zones make it easier for Australians to travel here"], answer: 0, explain: "Interaction falls with distance. Shared language helps, but the UK and USA speak English too and send far fewer visitors: short, cheap flights are the bigger factor." },
           { type: "mc", fig: FLOWFIG, q: "Why is this flow map centred on the Pacific Ocean instead of Greenwich?", options: ["So flows to NZ aren't split at the map's edge", "Because the Pacific is the largest ocean on Earth", "Because all world maps must be centred on the Pacific", "To make Europe look bigger and easier to label clearly"], answer: 0, explain: "A map's centre is a choice. Centring on Greenwich would cut New Zealand's flows in half at the 180° line." },
           { type: "mc", kind: "Choose the graph", teach: "graphs", fig: { kind: "table", head: ["Visitors (thousands)", "Australia", "China", "USA", "UK"], rows: [["2019", "1500", "407", "372", "233"], ["2023", "1250", "120", "300", "190"]], cap: "Visitor arrivals to NZ by country, two years", src: "Practice data (2023 values invented)" }, q: "Look at this data. Which type of graph would show it best?", options: GRAPHS, answer: 3, explain: "Categories (countries) compared across two years: a multiple bar graph puts the bars side by side." },
-          { type: "mc", kind: "Justify a solution", teach: "sustainability", q: "Tekapo controls outdoor lighting to keep its skies dark. Which is the <b>best-justified</b> judgement about this solution?", options: ["Largely sustainable: it protects the dark sky, stargazing jobs and stars used in Māori navigation, but only if new building follows the rules.", "Sustainable: stargazing tourism brings money and jobs, and the lighting rules keep the sky dark enough for visitors to keep coming back.", "Unsustainable: more tourists mean more hotels and cars, so every year the sky will brighten whatever lighting rules are put in place.", "Sustainable: the Aoraki Mackenzie reserve was created in 2012 and is now one of the largest dark-sky reserves in the world."], answer: 0, explain: "A strong judgement covers several aspects of sustainability, uses evidence and considers different people." }
+          { type: "mc", kind: "Justify a solution", teach: "sustainability", q: "Tekapo controls outdoor lighting to keep its skies dark. Which is the <b>best-justified</b> judgement about this solution?", options: ["Sustainable: at low cost it protects the dark sky, stargazing jobs and stars used in Māori navigation, and the rules cover all new building.", "Sustainable: stargazing tourism brings money and jobs, and the lighting rules keep the sky dark enough for visitors to keep coming back.", "Unsustainable: more tourists mean more hotels and cars, so every year the sky will brighten whatever lighting rules are put in place.", "Sustainable: the Aoraki Mackenzie reserve was created in 2012 and is now one of the largest dark-sky reserves in the world."], answer: 0, explain: "A strong judgement covers several aspects of sustainability, uses evidence and considers different people." }
         ],
-        facts: ["The Aoraki Mackenzie International Dark Sky Reserve was created in 2012.", "Lighting in the area is controlled to keep skies dark.", "The Church of the Good Shepherd was built in 1935."] },
+        facts: ["The Aoraki Mackenzie International Dark Sky Reserve was created in 2012.", "Lighting in the area is controlled to keep skies dark.", "The Church of the Good Shepherd was built in 1935.", "For Māori, the stars over the Mackenzie Basin carry navigation and seasonal knowledge, such as the rising of Matariki."] },
       { id: "z2", place: "Lalibela, Ethiopia", at: [12.03, 39.04], photo: "lalibela",
         postcard: "Churches carved down into solid rock 800 years ago. Most people here still farm.",
         steps: [
-          { type: "num", fig: { kind: "triangle", pts: TRI, axes: ["% primary", "% secondary", "% tertiary"], cap: "Employment by sector, approximate", src: "Approximate, c. 2022 (ILO modelled estimates)" }, prompt: "Read the triangular graph. What <b>percentage</b> of India's workers are in the <b>primary</b> sector (farming, fishing, mining)?", answer: 44, tol: 4, unit: "%", explain: "Follow the primary grid lines (parallel to the right-hand side) to the left axis." },
+          { type: "num", fig: { kind: "triangle", pts: TRI, axes: ["% primary", "% secondary", "% tertiary"], cap: "Employment by sector, approximate", src: "Approximate, c. 2022 (ILO modelled estimates)" }, prompt: "Read the triangular graph. What <b>percentage</b> of Ethiopia's workers are in the <b>primary</b> sector (farming, fishing, mining)?", answer: 64, tol: 4, unit: "%", explain: "Follow the primary grid lines (parallel to the right-hand side) to the left axis." },
           { type: "mc", fig: { kind: "triangle", pts: TRI, axes: ["% primary", "% secondary", "% tertiary"], cap: "Employment by sector, approximate" }, q: "Which country has the largest share of workers in <b>services</b> (tertiary)?", options: ["United Kingdom", "Germany", "China", "Ethiopia"], answer: 0, explain: "The UK point is closest to the tertiary corner: about 81%." },
           { type: "mc", q: "As countries develop, their points on the triangular graph usually move…", options: ["away from the primary corner towards the tertiary corner", "towards the primary corner as more people farm the land", "to the very centre of the triangle and then stay there", "randomly around the graph, with no clear direction at all"], answer: 0, explain: "Jobs shift from farming to industry, then to services." },
           { type: "mc", kind: "Choose the graph", teach: "graphs", fig: { kind: "table", head: ["% of workers", "Primary", "Secondary", "Tertiary"], rows: [["2000", "79", "7", "14"], ["2022", "64", "10", "26"]], cap: "Ethiopia's workforce by sector", src: "Approximate" }, q: "Look at this data. Which type of graph would show it best?", options: GRAPHS, answer: 5, explain: "Parts of a whole that add to 100%: a percentage (divided) bar graph, one bar for each year." }
@@ -1555,7 +1563,7 @@ window.GAME = {
       { id: "z3", place: "Bioko Island, Equatorial Guinea", at: [3.5, 8.7], photo: "bioko",
         postcard: "Rainforest, waterfalls, rare primates and oil rigs offshore.",
         steps: [
-          { type: "mc", fig: { kind: "scatter", pts: SCAT, logx: true, x0: 1, x1: 100, xt: [1, 2, 5, 10, 20, 50, 100], y0: 50, y1: 90, ys: 10, xLabel: "GDP per person (thousand US$, PPP, log scale)", yLabel: "Life expectancy (years)", src: "Approximate, c. 2022" }, q: "Describe the correlation between GDP per person and life expectancy.", options: ["Positive, with smaller gains in life expectancy at higher GDP", "Positive and close to perfect: almost no points sit off the trend", "Negative: richer countries tend to have shorter lives on average", "No correlation: life expectancy is similar at every level of GDP"], answer: 0, explain: "As GDP rises, life expectancy rises, though the gains get smaller at the top." },
+          { type: "mc", fig: { kind: "scatter", pts: SCAT, logx: true, x0: 1, x1: 100, xt: [1, 2, 5, 10, 20, 50, 100], y0: 50, y1: 90, ys: 10, xLabel: "GDP per person (thousand US$, PPP, log scale)", yLabel: "Life expectancy (years)", src: "Approximate, c. 2022" }, q: "Describe the correlation between GDP per person and life expectancy.", options: ["Positive: countries with higher GDP per person tend to live longer", "Positive and almost perfect: hardly any points sit off the trend", "Negative: richer countries tend to have shorter lives on average", "No correlation: life expectancy is similar at every level of GDP"], answer: 0, explain: "As GDP rises, life expectancy rises, though the gains get smaller at the top." },
           { type: "mc", fig: { kind: "scatter", pts: SCAT, logx: true, x0: 1, x1: 100, xt: [1, 2, 5, 10, 20, 50, 100], y0: 50, y1: 90, ys: 10, xLabel: "GDP per person (thousand US$, PPP, log scale)", yLabel: "Life expectancy (years)" }, q: "Which country is an <b>anomaly</b>: much lower life expectancy than others with similar GDP?", options: ["Eq. Guinea", "Bangladesh", "Japan", "Niger"], answer: 0, explain: "Oil wealth makes GDP per person look high, but it's unevenly shared. South Africa is a similar anomaly." },
           { type: "mc", q: "Why is the x-axis drawn on a <b>log scale</b> (1, 2, 5, 10, 20…)?", options: ["GDP varies hugely; a log scale spreads out the poorer countries", "It hides the richest countries so the graph looks tidier and smaller", "Because life expectancy is always measured in years, not in dollars", "It turns the curved relationship into a straight line, which proves causation"], answer: 0, explain: "On a normal scale, most countries would be crushed into the left edge." },
           { type: "sort", kind: "Values", teach: "perspectives", prompt: "Which value lies behind each view about Equatorial Guinea's oil?", cats: ["Economic", "Social", "Environmental", "Cultural"], items: [{ t: "\"Oil exports earn the government billions of dollars.\"", c: 0 }, { t: "\"Oil money should build clinics so people live longer.\"", c: 1 }, { t: "\"Drilling risks spills near Bioko's turtle nesting beaches.\"", c: 2 }, { t: "\"The Bubi people's language and traditions must be protected.\"", c: 3 }], explain: "Spotting the value behind a view helps explain why people hold it." }
@@ -1571,7 +1579,7 @@ window.GAME = {
         ],
         facts: ["Moriori, the islands' first people, call them Rēkohu. Māori call them Wharekauri.", "The islands are among the first inhabited places to see each new day.", "About 600 people live there."] },
       { id: "z5", place: "Bouvet Island", at: [-54.416667, 3.35], photo: "bouvet",
-        postcard: "The final stop: the most remote island on Earth, 93% glacier. Position: 54°25′S 3°21′E.",
+        postcard: "The most remote island on Earth, 93% covered by glacier. Position: 54°25′S 3°21′E.",
         steps: [
           { type: "coords", blind: true, dmsPin: true, homeView: true, prompt: "Plot <b>54°25′S 3°21′E</b>. The readout is off. Zoom right in: you need to be within 5 km.", target: [-54.416667, 3.35], tol: [2, 5, 250], hint: "South Atlantic, south-west of South Africa, a long way north of Antarctica." },
           { type: "num", kind: "Calculate distance", prompt: "Bouvet is at <b>54°25′S</b>. The nearest Antarctic coast, almost due south, is at about <b>69°55′S</b>. Using <b>1′ ≈ 1.85 km</b>, how far away is it? (No ruler.)", answer: 1720, tol: 40, unit: "km", explain: "69°55′ − 54°25′ = 15°30′ = 930′. 930 × 1.85 ≈ 1,720 km." },
@@ -1585,7 +1593,7 @@ window.GAME = {
 /* ── THREE PARTS ── */
 const G = window.GAME;
 G.parts = [
-  { n: 1, title: "Location, distance & time", blurb: "Latitude and longitude to the second, plotting and reading positions, scale, distance, time zones, and the NCEA 3.4 ideas of perspectives, impacts and sustainability.", cases: ["c1", "c2"] },
+  { n: 1, title: "Location, distance & time", blurb: "Plotting and reading latitude and longitude to the second, scale and distance, time zones, photos and climate graphs, and the NCEA 3.4 ideas of perspectives, impacts and sustainability.", cases: ["c1", "c2"] },
   { n: 2, title: "Maps, images & landscapes", blurb: "Caves and karst, aerial and satellite images, photo interpretation, and the 1:50 000 topo sheet: grid references, contours, gradient, cross-sections, area and bearings.", cases: ["c3", "c4", "c5"] },
   { n: 3, title: "Graphs, data & weather", blurb: "Climate graphs, choropleths, proportional circles, pyramids, flow maps, triangular and scatter graphs, synoptic charts, density and percentage change.", cases: ["c6", "c7", "c8"] }
 ];
@@ -1593,14 +1601,92 @@ G.cases = G.cases.filter(c => c.id !== "c0");
 G.cases.forEach(c => { c.part = G.parts.find(p => p.cases.includes(c.id)).n; });
 /* questions kept in each stop (original positions); a stop with [] is left out of this version */
 const KEEP = { i1: [], i2: [], i3: [], i4: [],
-  e1: [0, 1, 3, 4], e2: [0, 1], e3: [0, 2, 3],
-  x1: [1, 2], x2: [0, 1, 4], x3: [2], x4: [1, 2], x5: [0, 1], x6: [2, 3, 6, 7, 8, 9],
+  e1: [0, 1, 4], e2: [], e3: [0, 2],
+  x1: [1, 2], x2: [1, 4], x3: [2], x4: [2], x5: [0, 1], x6: [2, 3, 6, 7, 8, 9],
   u1: [2], u2: [5], u3: [0], u4: [], u5: [0],
-  a1: [0], a2: [0, 3], a3: [0, 5], a4: [0, 3],
-  f1: [0, 2, 4], f2: [0, 1, 2], f3: [0, 2], f4: [0, 1],
-  k1: [0], k2: [2, 3], k3: [0, 1, 2],
-  p1: [0, 1, 4, 5], p2: [0, 1, 3], p3: [1, 2, 3],
-  z1: [0, 2, 5], z2: [0, 2], z3: [0, 1], z4: [0, 1, 2], z5: [0] };
+  a1: [0], a2: [0, 3], a3: [0, 5], a4: [3],
+  f1: [0, 2, 4], f2: [0, 1, 2], f3: [0], f4: [0, 1],
+  k1: [0], k2: [0, 3], k3: [0, 1, 2],
+  p1: [0, 1, 4, 5], p2: [0, 1], p3: [1, 2, 3],
+  z1: [0, 2, 5], z2: [0], z3: [0, 1], z4: [0, 2], z5: [] };
+
+/* ── exam-style questions: describe / explain using the resources ── */
+const EXAM = (kind, extra) => Object.assign({ type: "mc", kind: "Exam-style · " + kind, teach: "evidence" }, extra);
+const EXAMS = {
+  x6: [[8, EXAM("Plan an evaluation", { q: "The 2022 NCEA question was: <b>\"How sustainable is lithium mining likely to be in future?\"</b> Which plan answers this question best?", options: [
+    "Judge the extent of sustainability now and in future, weighing social, economic and environmental effects with evidence, then give an overall verdict.",
+    "Describe how lithium is mined today, using the resources, and then say whether the mining is sustainable or not.",
+    "Explain why the Salar's flat, dry, brine-rich environment makes it so suitable for lithium extraction, using the resources as evidence.",
+    "Answer yes or no first, then list as many effects of lithium mining on the Salar and its people as you can find in the booklet."], answer: 0,
+    explain: "\"How sustainable\" asks for a judgement of extent, not yes/no, across social, economic and environmental angles, and \"in future\" means you must look ahead. Option 2 forgets the future, option 3 answers a different question (suitability), and option 4 lists without judging." })]],
+  a3: [[5, { type: "sort", kind: "Evaluation yardsticks", teach: "evidence", prompt: "Excellence answers judge impacts using criteria (yardsticks). Which yardstick does each judgement about the Sindh floods use?", cats: ["Scale", "Duration", "Reversibility", "Equity"], items: [{ t: "The floods affected about 33 million people across the province.", c: 0 }, { t: "Water stayed on some fields for months, so a whole planting season was lost.", c: 1 }, { t: "Roads and bridges can be rebuilt, but lives lost cannot be replaced.", c: 2 }, { t: "The poorest farmers, with no savings or insurance, lost the most.", c: 3 }], explain: "Scale = how many people or how large an area. Duration = how long it lasts. Reversibility = whether it can be fixed. Equity = who carries the cost. A judgement without a yardstick is just an opinion." }],
+       [5, EXAM("Most significant · justify", { fig: { kind: "photo", id: "sg_pakistan", cap: "Resource: Sindh, 27 August 2021 (left) and 27 August 2022 (right). Key: bright green = crops and vegetation · dark blue = water · pale cyan = cloud · fawn = bare dry ground", labels: [[23, 47, "Indus"]] }, q: "Exam-style: <b>\"What was the most significant impact of the 2022 floods in Sindh? Justify your answer.\"</b> Which answer would score highest?", options: [
+    "Loss of farmland: the images show fields west of the Indus under water, cutting food and income for millions. Damaged roads matter too, but they are rebuilt far faster than a lost season.",
+    "Loss of farmland was the most significant, because large areas of farmland west of the Indus were under water in the images, and many people in Sindh work in farming.",
+    "The floods damaged farms, roads, homes and schools, and millions of people had to leave their homes for a long time. Overall, the most significant impact was on the farms.",
+    "The most significant impact was the damage to people's lives, because floods are always very bad for everyone who lives there and they take a long time to recover."], answer: 0,
+    explain: "\"Most significant… justify\" needs you to pick one, use evidence, apply a yardstick, and show why it beats a named alternative. Option 2 never compares; option 3 lists and only judges in the last line; option 4 has no evidence." })]],
+
+  e1: [[-1, { type: "sort", kind: "Command words", teach: "evidence", prompt: "NCEA questions start with a command word. Match each command word to what it asks you to do.", cats: ["Describe", "Explain", "Evaluate", "Most significant… justify"], items: [{ t: "Say what and where, with precise evidence such as values, distances and coordinates.", c: 0 }, { t: "Say how and why, linking causes to effects (because… which means…).", c: 1 }, { t: "Weigh up each point as you go, compare them, then give an overall verdict.", c: 2 }, { t: "Pick one, set your criteria, and show why it beats named alternatives.", c: 3 }], explain: "Read the command word first: it tells you what kind of thinking the question wants. Describing when you were asked to evaluate is one of the commonest reasons for lost marks." }], [4, EXAM("Describe the cultural environment", { fig: { kind: "photo", id: "tristan_map", cap: "Resource: map of Edinburgh of the Seven Seas" }, q: "Describe the <b>cultural environment</b> of Tristan da Cunha. Which answer uses the resources (the map, your measurement and the fact cards) best?", options: [
+    "Fewer than 250 people live in one compact settlement with a hospital, a school, two churches and a crawfish factory by the harbour (map); their only link is a ship from Cape Town, about 2,800 km and 6 days away.",
+    "Fewer than 250 people live in one compact settlement with a hospital, a school, two churches and a crawfish factory by the harbour (map); their only link is a ship from Cape Town, about 280 km and under a day away.",
+    "People live on the island and do some fishing, and they are a very long way from everywhere else, so life there can be quite hard for the community.",
+    "A volcanic island rising to 2,062 m at Queen Mary's Peak, with steep cliffs and a narrow coastal plain, last erupting in 1961 and surrounded by the South Atlantic."], answer: 0,
+    explain: "The best answer is specific, uses your ruler measurement correctly (about 2,800 km), and stays on the cultural environment. Option 2 misreads the distance by a factor of ten; option 3 has no evidence; option 4 describes the natural environment." })]],
+  x5: [[1, EXAM("Describe the natural environment", { fig: Object.assign({ kind: "climate" }, CLIM.sl), q: "Describe the <b>natural environment</b> of Lençóis Maranhenses. Which answer uses the climate graph and the photo best?", options: [
+    "Hot all year (about 26–28 °C) with a wet season from January to May, when about 1,700 mm falls, and a very dry season from August to November; lagoons form between white sand dunes.",
+    "Hot all year (about 26–28 °C) with a wet season from June to September, when about 170 mm falls, and a very dry season from January to May; lagoons form between white sand dunes.",
+    "It is a hot place where it rains quite a lot at some times of the year, and there are a lot of sand dunes with some water lying in between them.",
+    "Tourists cross the dunes in 4×4 trucks from nearby towns, and the national park protects about 1,550 km² from new building and farming."], answer: 0,
+    explain: "The best answer reads the graph correctly (the wet season is January–May, about 1,700 mm) and links climate to the landforms. Option 2 misreads the months and the total; option 3 is vague; option 4 is mainly cultural." })]],
+  u1: [[2, EXAM("Describe the natural environment", { fig: { kind: "photos", ids: ["oparara", "oparara_river"], caps: ["Resource A: Ōpārara Arch", "Resource B: the river inside the arch"] }, q: "Describe the <b>natural environment</b> at Ōpārara. Which answer uses the photos best?", options: [
+    "A huge rock arch spans the valley, with dense forest growing on top of and around it (A); inside, a tea-coloured river flows over pale, rounded boulders (B).",
+    "A huge rock arch spans the valley, with bare rock and no plants anywhere near it (A); inside, a clear blue river flows over sharp, angular rocks (B).",
+    "There is a big arch made of rock, and there are lots of trees and some water in the area around it, so it is a nice natural place to visit.",
+    "A walking track and viewing platform let visitors reach the arch, and the area is managed by DOC as part of Kahurangi National Park."], answer: 0,
+    explain: "The best answer describes what can actually be seen, and says which photo each piece of evidence comes from. Option 2 misreads both photos; option 3 is vague; option 4 is about the cultural environment." })]],
+  a4: [[2, EXAM("Describe the cultural environment", { teach: "landuse", fig: { kind: "photo", id: "sg_taupo", cap: "Resource: oblique aerial photo of Taupō", labels: [[26, 60, "1"], [70, 47, "2"], [80, 9, "3"], [78, 80, "4"]] }, q: "Describe the <b>cultural environment</b> of Taupō shown in the photo. Which answer uses the photo best?", options: [
+    "The CBD (1) sits on the lakefront beside the Waikato River outlet (4); housing spreads back from it (2), and new subdivisions are eating into farmland at the edge of town (3).",
+    "The CBD (3) sits at the far edge of town beside the farmland; housing spreads back from it (2), and the Waikato River (1) flows into the lake through the middle of town.",
+    "Taupō is a town by a lake with shops, houses and some farms around it, and lots of people live and work there or come to visit on holiday.",
+    "Lake Taupō fills a caldera from a super-eruption; the Waikato River flows out of it, and volcanoes rise to the south on the volcanic plateau."], answer: 0,
+    explain: "The best answer uses the numbered labels to locate each land use and explains the pattern. Option 2 misreads the labels; option 3 has no evidence; option 4 describes the natural environment." })]],
+  f4: [[1, EXAM("Describe the natural environment", { topoMode: "topo", homeView: true, q: () => "Use the topo map. Describe the <b>natural environment</b> of the area on the sheet. Which answer uses the map best?", options: () => [
+    `Hilly in the north and west, rising to Mt Kahu (${F.kahu.h} m) in the north-west; the land falls east to the coast, a river flows south-east to the sea near Awamouth, and forest covers the north-west and south-west.`,
+    `Hilly in the south and east, rising to Mt Kahu (${F.kahu.h - 200} m) in the south-east; the land falls west to the coast, a river flows north-west to the sea near Awamouth, and forest covers the north-east and south-east.`,
+    "There are some hills and a mountain, a river and a coast, and some forest areas, so the land is mixed with high and low parts in different places.",
+    "Awamouth is the main town, at the river mouth, with a wharf, a church and a school; a road links it to the bridge and a track climbs to Kahu Hut."], answer: 0,
+    explain: () => `The best answer gives direction, a spot height read from the map (${F.kahu.h} m) and the drainage pattern. Option 2 gets the directions and the height wrong; option 3 is vague; option 4 describes the cultural environment.` })]],
+  k2: [[3, EXAM("Describe the natural environment", { fig: Object.assign({ kind: "climate" }, CLIM.ch), q: "Describe the <b>climate</b> of Sohra. Which answer uses the climate graph best?", options: [
+    "Mild all year (about 12–21 °C) with extreme summer rain: July alone has about 3,270 mm, while December has only about 10 mm, so the year is very wet but strongly seasonal.",
+    "Mild all year (about 12–21 °C) with steady rain: July has about 327 mm and December about 300 mm, so rain falls fairly evenly through every month of the year.",
+    "It rains a lot at Sohra, especially in some months of the year, and it is not very hot or very cold, so it is a wet place with a mild climate overall.",
+    "Villagers grow living root bridges from rubber fig trees so they can cross rivers that flood in the wet season, and some bridges are centuries old."], answer: 0,
+    explain: "The best answer reads both lines of the graph accurately, with units, and describes the seasonal pattern. Option 2 misreads the bars; option 3 is vague; option 4 is cultural." })]],
+  p3: [[3, EXAM("Describe the cultural environment", { fig: { kind: "pyramid", list: [PYR.A, PYR.B, PYR.C], max: 10, src: "Approximate, c. 2023. Pyramid C is Japan." }, q: "Describe the <b>cultural environment</b> of the Iya Valley. Which answer uses the resources (Pyramid C, the census data and the fact cards) best?", options: [
+    "An ageing, shrinking rural community: Japan's census fell about 1.5% between 2010 and 2020, about 29% of people are 65 or over, and in Nagoro scarecrows outnumber residents.",
+    "A young, growing rural community: Japan's census rose about 1.5% between 2010 and 2020, about 29% of people are under 15, and in Nagoro new families outnumber older residents.",
+    "Not many people live in the Iya Valley and a lot of them are old, so the villages are quiet and some of the schools have had to close down.",
+    "A deep, steep-sided gorge cut by a fast river, with thick forest on the slopes and a vine bridge strung across the water far below."], answer: 0,
+    explain: "The best answer uses the census calculation, the pyramid and the fact cards accurately. Option 2 reverses the data; option 3 has no evidence; option 4 is about the natural environment (apart from the bridge)." })]],
+  z1: [[2, { type: "order", kind: "Values continuum", teach: "perspectives", prompt: "Place these views about Tekapo's outdoor-lighting rules on a continuum, from <b>strongly supports</b> (top) to <b>strongly opposes</b> (bottom).", items: ["\"The dark sky is a taonga: protecting it protects Māori star knowledge and our whole tourism industry.\"", "\"The rules are good, but small businesses should get help paying for new lights.\"", "\"I'm not sure yet: it depends whether the rules hold up new housing.\"", "\"The rules add cost and red tape; owners should light their property as they like.\""], explain: "A continuum shows the range of views, not just for and against. Conditional support (\"good, but…\") sits between strong support and neutral. Strong answers then explain the values behind each position." }], [0, EXAM("Describe the cultural environment", { fig: FLOWFIG, q: "Describe the <b>cultural environment</b> of Takapō / Lake Tekapo. Which answer uses the flow map and fact cards best?", options: [
+    "A small tourist township built around dark-sky stargazing: Australia sends by far the most visitors to New Zealand (about 1.5 million in 2019), then China and the USA, and lighting rules keep the sky dark.",
+    "A small tourist township built around dark-sky stargazing: China sends by far the most visitors to New Zealand (about 1.5 million in 2019), then the UK and Germany, and lighting rules keep the sky dark.",
+    "Tekapo is a small town where lots of tourists come from many countries to look at the stars at night, because the sky there is very dark.",
+    "A turquoise glacial lake in the Mackenzie Basin, surrounded by tussock grassland and mountains, under some of the clearest night skies on Earth."], answer: 0,
+    explain: "The best answer reads the arrow widths correctly and links the data to the place. Option 2 misreads the flow map; option 3 is vague; option 4 is the natural environment." })]]
+};
+/* skill-based replacements for questions that relied on outside knowledge */
+const CAPE = [11.833333, 51.283333], SOC = [12.49, 53.96];
+const REPL = {
+  "x1.2": { type: "num", kind: "Measure distance", teach: "greatcircle", ruler: true, snapPts: () => [SOC, CAPE], marks: () => [{ at: SOC, label: "A" }, { at: CAPE, label: "B" }], view: { pts: [SOC, CAPE], max: 40 }, prompt: "Socotra's plants evolved in isolation. Use the map ruler to measure how far the cross on Socotra <b>(A)</b> is from <b>Cape Guardafui (B)</b>, the tip of the Horn of Africa. Give the distance in km.", answer: () => d3.geoDistance([SOC[1], SOC[0]], [CAPE[1], CAPE[0]]) * 6371, tolPct: 6, unit: "km", explain: () => `About ${Math.round(d3.geoDistance([SOC[1], SOC[0]], [CAPE[1], CAPE[0]]) * 6371)} km of open sea: far enough that seeds and animals rarely cross, so species evolve on their own.` },
+  "x4.2": { type: "mc", kind: "Describe the photo", fig: { kind: "photo", id: "tsingy", cap: "Tsingy de Bemaraha" }, q: "Describe the <b>background</b> of the photo.", options: ["A flat, low plain with scattered trees, stretching to the horizon", "Snow-capped mountains rising above the pinnacles", "Open sea, with waves breaking on a sandy beach", "A busy town with roads and buildings below"], answer: 0, explain: "Foreground: the rope bridge. Middle ground: rows of grey pinnacles. Background: flat, low land to the horizon under a cloudy sky." },
+  "u1.2": { type: "mc", kind: "Use evidence", fig: { kind: "photos", ids: ["oparara", "oparara_river"], caps: ["Ōpārara Arch", "The river inside the arch"] }, q: "Look at the <b>foreground</b> of the second photo. The boulders are pale and smooth with rounded edges. What does their shape suggest?", options: ["They have been rolled and worn down by the river over a long time", "They broke off the roof very recently and have not moved since", "People shaped and placed them there to make a walking track", "They are soft lumps of mud that have dried hard in the sun"], answer: 0, explain: "Rounded edges are evidence of abrasion: rocks knock against each other as the river carries them. Freshly fallen rock is angular." },
+  "a2.0": { type: "mc", kind: "Use evidence", fig: { kind: "photos", ids: ["thingvellir", "thing_rift"], caps: ["Almannagjá gorge", "Fissures across the valley floor"] }, q: "Þingvellir lies on a plate boundary. Which evidence <b>in the photos</b> best shows that the land here is being pulled apart?", options: ["Long open cracks running side by side across the valley floor", "A cone-shaped volcano rising high above the valley", "Rock layers bent and folded into tight curves", "A steep, deep ocean trench just off the coast"], answer: 0, explain: "Open fissures and a long gorge with a steep wall are signs of tension: the North American and Eurasian plates are moving apart here." },
+  "a4.3": { type: "mc", kind: "Describe a landform", fig: { kind: "photos", ids: ["sg_tongariro", "ruapehu_relief"], caps: ["Photo: Ngāuruhoe with Ruapehu behind", "3D relief view of the Tongariro volcanoes"] }, q: "Compare the photo and the relief model. Which description of <b>Ngāuruhoe</b> (the cone in front) is best supported?", options: ["A steep, symmetrical cone with a crater at the summit", "A broad, gently sloping dome much wider than it is high", "A flat-topped plateau with cliffs on every side", "A long, narrow ridge running from north to south"], answer: 0, explain: "In both views Ngāuruhoe rises steeply to a small summit crater, with even slopes on each side. Ruapehu behind it is broader and flatter-topped." },
+  "p3.1": { type: "num", kind: "Read the pyramid", teach: "pyramid", fig: { kind: "pyramid", list: [PYR.A, PYR.B, PYR.C], max: 10, src: "Approximate, c. 2023" }, prompt: "Read <b>Pyramid C</b>. What percentage of the total population are <b>women aged 80 and over</b> (the top bar)?", answer: PYR.C.f[16], tol: 0.6, dp: 1, unit: "%", explain: () => `About ${PYR.C.f[16]}%, against ${PYR.C.m[16]}% for men of the same age: women live longer. In Pyramid A (${PYR.A.f[16]}%) almost nobody reaches 80.` },
+  "z2.2": { type: "num", kind: "Read the graph", fig: { kind: "triangle", pts: TRI, axes: ["% primary", "% secondary", "% tertiary"], cap: "Employment by sector, approximate", src: "Approximate, c. 2022 (ILO modelled estimates)" }, prompt: "Read the triangular graph. What percentage of <b>China's</b> workers are in the <b>secondary</b> sector (industry and manufacturing)?", answer: 29, tol: 3, unit: "%", explain: "China: about 23% primary, 29% secondary and 48% tertiary. The three always add up to 100." }
+};
 /* new Level 3 calculations, inserted after the given original position */
 const FCX = () => [T.N0 + 8.2, T.E0 + 1.6];
 const FCOUNT = () => { let n = 0; for (let x = 0; x < 6; x++) for (let y = 4; y < 10; y++) { let c = 0; for (let i = 0; i < 20; i++) for (let j = 0; j < 20; j++) if (T.inPoly([x + (i + .5) / 20, y + (j + .5) / 20], T.FOREST2)) c++; if (c >= 200) n++; } return n; };
@@ -1613,10 +1699,12 @@ const ADD = {
   p3: [[2, { type: "num", kind: "Percentage change", teach: "percent", prompt: "Japan's census counted <b>128,057,352</b> people in 2010 and <b>126,146,099</b> in 2020. What is the <b>percentage change</b>? (1 decimal place; use − for a decrease)", answer: -1.5, tol: 0.06, dp: 1, unit: "%", hint: "Percentage change = (new − old) ÷ old × 100. A fall gives a negative answer.", explain: "(126,146,099 − 128,057,352) ÷ 128,057,352 × 100 = −1.49, about −1.5%. 2010 was Japan's census peak: deaths now outnumber births and migration is low." }]],
   z4: [[2, { type: "mc", kind: "Predict the weather", teach: "synoptic", fig: { kind: "synoptic", stations: SYN_ST }, q: "The cold front is moving east. What is most likely at station <b>A</b> as the front passes?", options: ["Wind swings from NW to SW, temperature drops, showers", "Wind swings from SW to NW, temperature rises, skies clear", "Wind dies away completely and a high-pressure calm sets in", "Steady NW wind continues and the temperature keeps rising"], answer: 0, explain: "Ahead of a cold front the wind is NW and mild; behind it the wind turns SW, colder air arrives, and there are showers. In New Zealand this is the classic 'southerly change'." }], [0, { type: "num", kind: "Interpolate between isolines", teach: "synoptic", fig: { kind: "synoptic", stations: SYN_ST }, prompt: "Now <b>interpolate</b>. Judge how far station C is between the two isobars on either side of it, and estimate its pressure to the nearest hPa.", answer: () => synP(SYN_ST[2]), tol: 0.65, dp: 0, show: "1017–1018 hPa", unit: "hPa", hint: "Example: a point one quarter of the way from the 1008 isobar to the 1012 isobar is about 1009 hPa.", explain: () => `About ${Math.round(synP(SYN_ST[2]))} hPa. The same method works for contours, isotherms and any isoline map: estimate the fraction of the gap, then add that fraction of the interval.` }]]
 };
+Object.keys(EXAMS).forEach(k => { ADD[k] = (ADD[k] || []).concat(EXAMS[k]); });
 G.cases.forEach(c => {
   c.stops.forEach(s => {
     const keep = KEEP[s.id], add = ADD[s.id] || [], out = [];
-    s.steps.forEach((st, i) => { st._o = i; if (!keep || keep.includes(i)) out.push(st); add.filter(a => a[0] === i).forEach(a => out.push(a[1])); });
+    add.filter(a => a[0] === -1).forEach(a => out.push(a[1]));
+    s.steps.forEach((st, i) => { st._o = i; const r = REPL[s.id + "." + i]; if (r) { r._o = i; st = r; } if (!keep || keep.includes(i)) out.push(st); add.filter(a => a[0] === i).forEach(a => out.push(a[1])); });
     s.steps = out; if (keep && !keep.length) s.dropped = true;
   });
   c.stops = c.stops.filter(s => !s.dropped);
@@ -1692,7 +1780,7 @@ const D = {
 };
 
 const L = {
-  concepts: { title: "Geographic concepts", text: `NCEA questions are built on these concepts. Learn to spot them:<br><br><b>Environment</b>: the natural and cultural features of a place.<br><b>Processes</b>: a sequence of actions that shapes an environment over time (erosion, migration, mining).<br><b>Patterns</b>: how things are arranged in space (clustered, linear) or time (seasonal, increasing).<br><b>Interaction</b>: people and environments affecting each other.<br><b>Change</b>: how things become different over time.<br><b>Perspectives</b>: the ways different people see an issue, based on their values.<br><b>Sustainability</b>: meeting today's needs without harming the future.<br><br><b>Precise location</b> uses coordinates, height, country, region and nearby features.`,
+  concepts: { title: "Geographic concepts", text: `NCEA questions are built on these concepts, and the exam booklet prints their definitions. Learn to spot them in a resource:<br><br><b>Environments</b>: natural and/or cultural, with features made by natural and/or cultural processes.<br><b>Location</b>: where something is; it can be an advantage or a constraint. Absolute (grid reference, lat/long) or relative (direction and distance from somewhere).<br><b>Perspectives</b>: ways of seeing the world that explain why people make different decisions about environments. They include perceptions (how people see a place) and viewpoints (what they think).<br><b>Change</b>: any alteration to a natural or cultural environment, over space and/or time, at different rates. Change can cause further change.<br><b>Interaction</b>: parts of an environment affecting each other: movements, flows, connections.<br><b>Processes</b>: a sequence of actions that shapes and changes environments (erosion, migration, urbanisation).<br><b>Patterns</b>: spatial (where: linear, clustered, peripheral) and temporal (when).<br><b>Sustainability</b>: meeting people's needs now without stopping future generations meeting theirs.<br><b>Accessibility</b>: how easily a place can be reached, and how easily people there reach services.<br><br><b>Precise location</b> uses coordinates, height, country, region and nearby features.`,
     check: { q: "\"Tourists' boots wear down a fragile track.\" Which concept is this?", options: ["Interaction", "Patterns", "Perspectives", "Environment"], answer: 0, explain: "People affecting the environment: interaction." } },
   perspectives: { title: "Perspectives and values", text: `A <b>perspective</b> is how a person or group sees an issue. It comes from their <b>values</b>:<br>• <b>Economic</b>: money, jobs, income.<br>• <b>Social</b>: health, wellbeing, communities, fairness.<br>• <b>Environmental</b>: protecting nature.<br>• <b>Cultural</b>: identity, tradition, language, sacred places; for Māori, ideas like kaitiakitanga and taonga.<br><br>To match a view to a group, ask: <b>what does this group depend on, or care about most?</b> A farmer depends on water; a company on profit; an iwi or hapū on whenua and taonga.`,
     check: { q: "\"This forest is our ancestor and must stay standing for our grandchildren.\" The main value is…", options: ["Cultural", "Economic", "Social", "None"], answer: 0, explain: "Identity, ancestors and future generations: cultural." } },
@@ -1729,8 +1817,10 @@ const L = {
     check: { q: "Rows of small houses with gardens, curving streets and cul-de-sacs are most likely…", options: ["residential", "the CBD", "industrial", "rural fringe"], answer: 0, explain: "Small detached houses, gardens and curving cul-de-sacs mark a residential zone. The CBD has large, tightly packed commercial buildings." } },
   karst: { title: "Karst, caves and cave maps", text: `<b>Limestone</b> dissolves in rainwater, which is a weak acid (carbonation). This makes <b>karst</b> landscapes: caves, sinkholes, pinnacles and arches.<br>• <b>Stalactites</b> hang from the ceiling (hold on <b>t</b>ight). <b>Stalagmites</b> grow up from the floor (<b>m</b>ight reach the top).<br>• <b>Dolines / sinkholes / cenotes</b>: hollows where the roof collapses or rock dissolves.<br>• <b>Arches</b>: what's left of a cave roof after a river enlarges the passage.<br><br><b>Cave maps</b> are drawn two ways: a <b>plan</b> (from above) and a <b>profile</b> or elevation (from the side, showing depth). Read depth from the scale.`,
     check: { q: "Which feature grows UP from a cave floor?", options: ["Stalagmite", "Stalactite", "Doline", "Arch"], answer: 0, explain: "Stalagmites rise from the ground." } },
-  pattern: { title: "Describing a pattern", text: `Describe a spatial pattern using:<br>• <b>Shape</b>: clustered, linear, arc or ring, scattered, even.<br>• <b>Location</b>: where it is, with compass directions and named places.<br>• <b>Extent</b>: how big an area, with figures from the scale.<br>• <b>Exceptions</b>: anything that doesn't fit.<br><br>Example: "Cenotes form an arc about 180 km across the north-west of the Yucatán Peninsula."`,
-    check: { q: "Which describes a pattern's SHAPE?", options: ["Arc", "North-west", "180 km", "Mexico"], answer: 0, explain: "Arc is a shape; the others are location and extent." } },
+  evidence: { title: "Exam answers: using the resources", text: `In the NCEA exam you are not asked for a skill by name. You are asked to <b>describe</b>, <b>explain</b> or <b>evaluate</b>, and you show your skills by pulling <b>evidence from the resources</b> into your answer.<br><br><b>A strong answer</b><br>• Uses <b>specific data</b> read correctly from a graph, map or table, with units (e.g. "about 3,270 mm in July").<br>• Gives <b>location</b> precisely: direction, distance, grid reference or lat/long.<br>• Names the <b>resource</b> it comes from.<br>• Stays on the question: <b>natural</b> environment = landforms, climate, vegetation, rivers, soils; <b>cultural</b> environment = people, settlement, land use, economy, traditions.<br><br><b>Weaker answers</b> are vague ("it is quite wet"), misread the data, or describe the wrong environment.<br><br><b>Command words</b><br>• <b>Describe</b>: what and where, with precise evidence.<br>• <b>Explain / why</b>: how and why, linking causes and effects.<br>• <b>Evaluate</b>: weigh up each point, compare, and give an overall verdict.<br>• <b>Most significant… justify</b>: choose one, set criteria, show why it beats named alternatives.<br>• <b>How sustainable</b>: judge the extent (not yes/no) across social, economic and environmental angles, looking to the future.<br><br><b>Yardsticks for judging</b>: scale (how many, how big), duration (how long), reversibility (can it be fixed?), equity (who carries the cost?).<br><br><b>Common traps</b>: answering a different question; mixing up natural and cultural, or cause and impact; treating two opinions as two perspectives; naming "the most significant" without comparing; forgetting "in future".`,
+    check: { q: "Which sentence uses the resources best to describe a natural environment?", options: ["Rainfall peaks at about 3,270 mm in July (Resource A), and steep forested slopes drop into a deep gorge (Resource B).", "It is a very wet place with lots of rain and it has some hills and plenty of trees around it.", "About 230 people live in one village, and the fishery pays for the school and the clinic.", "Rainfall peaks at about 327 mm in July (Resource A), so the valley is quite dry in summer."], answer: 0, explain: "The first is specific, reads the graph correctly, names the resources and stays on the natural environment. The others are vague, cultural, or misread the graph." } },
+  pattern: { title: "Describing a pattern", text: `Describe a spatial pattern using:<br>• <b>Shape</b>: <b>linear</b> (in a line), <b>clustered</b> (bunched together), <b>peripheral</b> (around the edge of an area), or scattered.<br>• <b>Location</b>: where it is, with compass directions and named places.<br>• <b>Extent</b>: how big an area, with figures from the scale.<br>• <b>Exceptions</b>: anything that doesn't fit.<br><br>Example: "Cenotes form an arc about 180 km across the north-west of the Yucatán Peninsula."`,
+    check: { q: "Which describes a pattern's SHAPE?", options: ["Linear", "North-west", "180 km", "Mexico"], answer: 0, explain: "Linear is a shape; the others are location and extent." } },
   gridref: { title: "Grid references (4, 6 and 14 figure)", text: `${D.gridref}<b>4-figure</b>: the line to the LEFT of the square (easting), then the line BELOW it (northing).<br><b>6-figure</b>: estimate tenths across, then tenths up.<br><b>14-figure (NZTM)</b>: full metres. The grid labels show km: the small prefix 18 plus the large digits 24 → 1824 km = 1 824 000 mE. Add metres across: 1824 500 mE. Then the northing the same way, e.g. 5845 600 mN.<br><br>Remember: <b>along the corridor, then up the stairs</b>.<br><br><b>Area from grid squares</b>: on a 1:50 000 sheet each square is 1 km × 1 km = 1 km². Count every square that is at least half covered as 1, and ignore squares with only a sliver. This gives an estimate.`,
     check: { q: "A point is 3 tenths east of easting 27 and 8 tenths north of northing 41. What's the 6-figure reference?", options: ["273 418", "418 273", "27 41", "283 418"], answer: 0, explain: "Easting first: 273. Northing: 418." } },
   contours: { title: "Contours, height and landforms", text: `Contours join points of equal height. Check the <b>contour interval</b> (here 20 m). Thicker <b>index contours</b> are labelled every 100 m.<br>To find a height: start at a labelled line and count lines up or down.<br><br>• Lines close together = steep. Far apart = gentle.<br>• Rings getting smaller = hill or summit.${D.contours}${D.saddle}A <b>saddle</b> is the low point on a ridge between two summits.`,
@@ -1751,7 +1841,7 @@ const L = {
     check: { q: "Circle A's radius is 3× circle B's. A's value is…", options: ["9× B", "3× B", "6× B", "27× B"], answer: 0, explain: "3² = 9." } },
   flow: { title: "Flow maps", text: `Arrows show movement from an origin to a destination. The <b>width</b> of each arrow is proportional to the amount.<br><br>• Compare an arrow with the key widths to estimate its value.<br>• Look for the widest flows and where they come from.<br>• <b>Distance decay</b>: closer places usually interact more.<br><br>Lines show direction, not the exact route travelled.`,
     check: { q: "On a flow map, a thicker arrow means…", options: ["a larger amount moving", "a longer distance travelled", "a faster or more direct journey", "an older, more established route"], answer: 0, explain: "Width is proportional to the amount." } },
-  pyramid: { title: "Population pyramids", text: `Males left, females right. Each bar is a 5-year age group, as a % of the total population.<br><br><b>Shapes</b><br>• Wide base, narrow top: high birth rate, young population (Stage 2, e.g. Niger).<br>• Straight sides: births and deaths balanced (Stage 4).<br>• Narrow base, wide top: few births, ageing (Stage 5, e.g. Japan).<br><br><b>Dependency ratio</b> = (% aged 0–14 + % aged 65+) ÷ % aged 15–64 × 100.<br>Example: (40 + 5) ÷ 55 × 100 = <b>82</b>.`,
+  pyramid: { title: "Population pyramids", text: `Males left, females right. Each bar is a 5-year age group, as a % of the total population.<br><br><b>Shapes</b><br>• Wide base, narrow top: high birth rate, young population (e.g. Niger).<br>• Straight sides: births and deaths balanced.<br>• Narrow base, wide top: few births, ageing population (e.g. Japan).<br><br><b>Reading a bar</b>: go to the age group, then read straight down to the % scale on that side. Read males on the left scale and females on the right.<br><br><b>Dependency ratio</b> = (% aged 0–14 + % aged 65+) ÷ % aged 15–64 × 100.<br>Example: (40 + 5) ÷ 55 × 100 = <b>82</b>.`,
     check: { q: "0–14: 20%, 65+: 20%, 15–64: 60%. Dependency ratio?", options: ["67", "40", "60", "150"], answer: 0, explain: "40 ÷ 60 × 100 = 66.7." } },
   tri: { title: "Triangular graphs", text: `${D.tri}Three values that add to 100% (e.g. % of workers in primary, secondary and tertiary jobs) are shown as one point.<br>1. Find the point.<br>2. For each axis, follow the grid lines parallel to the side <b>opposite</b> that axis's 100% corner, and read the value on that axis.<br>3. Check the three add up to 100.<br><br>As countries develop, points usually move from the primary corner towards the tertiary corner.`,
     check: { q: "Primary 10% and secondary 25%. Tertiary must be…", options: ["65%", "35%", "75%", "100%"], answer: 0, explain: "100 − 10 − 25 = 65%." } },
@@ -1763,14 +1853,14 @@ const L = {
 
 const CASES = {
   c0: ["dms", "gridread", "bearing", "scale", "time"],
-  c1: ["dms", "gridread", "greatcircle", "scale", "bearing", "time", "graphs"],
-  c2: ["dms", "gridread", "greatcircle", "scale", "photo", "karst", "climate", "concepts", "perspectives", "impacts", "sustainability"],
-  c3: ["gridread", "photo", "karst", "pattern", "percent", "graphs", "perspectives"],
-  c4: ["photo", "satellite", "landuse", "gridread", "graphs", "impacts", "sustainability"],
-  c5: ["gridref", "contours", "gradient", "xsec", "bearing", "sight", "scale"],
-  c6: ["climate", "percent", "gridread", "graphs"],
-  c7: ["choro", "circles", "pyramid", "bearing", "graphs", "concepts"],
-  c8: ["flow", "tri", "scatter", "synoptic", "time", "greatcircle", "photo", "graphs", "perspectives", "sustainability"]
+  c1: ["evidence", "dms", "gridread", "greatcircle", "scale", "bearing", "time", "graphs"],
+  c2: ["evidence", "dms", "gridread", "greatcircle", "scale", "photo", "karst", "climate", "concepts", "perspectives", "impacts", "sustainability"],
+  c3: ["evidence", "gridread", "photo", "karst", "pattern", "percent", "graphs", "perspectives"],
+  c4: ["evidence", "photo", "satellite", "landuse", "gridread", "graphs", "impacts", "sustainability"],
+  c5: ["evidence", "gridref", "contours", "gradient", "xsec", "bearing", "sight", "scale"],
+  c6: ["evidence", "climate", "percent", "gridread", "graphs"],
+  c7: ["evidence", "choro", "circles", "pyramid", "bearing", "graphs", "concepts"],
+  c8: ["evidence", "flow", "tri", "scatter", "synoptic", "time", "greatcircle", "photo", "graphs", "perspectives", "sustainability"]
 };
 const FIGMAP = { climate: "climate", climates: "climate", pyramid: "pyramid", triangle: "tri", scatter: "scatter", synoptic: "synoptic", flowmap: "flow", pano: "sight", inset: "sight", photo: "photo", photos: "photo", table: "percent" };
 /* the lesson most useful for a given task */
@@ -1862,6 +1952,8 @@ G.cases.forEach((c, ci) => c.stops.forEach((s, si) => { s.ci = ci; s.si = si; s.
 STOPS.forEach((s, i) => { s.gi = i; s.prev = i ? STOPS[i - 1] : null; });
 const stepMax = st => ({ sort: 60, order: 60, pin: 100, coords: 100, compass: 30, mc: 30, measure: 60, num: 60, dms: 100, country: 50, pick: 50, gridref: 60, profile: 60, intro: 0 }[st.type] || 0);
 const QPTS = 10, WRONG_COST = 2;
+/* guessing must not pay: questions with few choices cost more per wrong try */
+const costOf = st => { if (!st) return WRONG_COST; if (st.type === "mc") { const n = (val(st.options) || []).length; return n <= 4 ? 5 : 4; } if (st.type === "pick") return 5; if (st.type === "compass" || st.type === "country") return 3; return WRONG_COST; };
 const stopMax = s => s.caseObj.id === "c0" ? 0 : s.steps.filter(st => st.type !== "intro").length * QPTS;
 const caseMax = c => c.stops.reduce((a, s) => a + stopMax(s), 0);
 const TOTAL_MAX = STOPS.reduce((a, s) => a + stopMax(s), 0);
@@ -1899,7 +1991,7 @@ function photoBg(id, lat, lon) {
   const x = ((lon + 180) / 360) * 100, y = ((90 - lat) / 180) * 100;
   return `background-image:url('${window.ASSETS["img/earth.jpg"]}');background-size:900% auto;background-position:${x}% ${y}%`;
 }
-function creditShort(id) { const c = CREDITS[id]; return c ? `Photo: ${c.source ? "supplied by your teacher" : `${esc(c.author)} · ${esc(c.license)} · Wikimedia Commons`}. Full credit when you reach it.` : ""; }
+function creditShort(id) { const c = CREDITS[id]; return c ? `Photo: ${c.source ? "supplied by your teacher" : `${esc(c.author)} · ${esc(c.license)} · Wikimedia Commons`}.` : ""; }
 function credit(id) { if (id && id.startsWith("topo:")) return "Generated view of Kahu Island (an invented place)"; const c = CREDITS[id]; return c ? (c.source ? `${esc(c.desc || "")} · photo supplied by your teacher for classroom use` : `${esc(c.desc || "")} · ${esc(c.author)} · ${esc(c.license)} · Wikimedia Commons`) : "Satellite image: NASA Blue Marble"; }
 
 /* ═════════════════════════ READ ALOUD ═════════════════════════ */
@@ -2182,7 +2274,7 @@ function applyLayers() {
   gTrail.style("display", $("#lyTrail").checked ? null : "none");
   updateGridLabels();
 }
-function drawProgressMarks() {
+function drawProgressMarks() { if (M.kind === "world") { gMarks.selectAll("*").remove(); gTrail.selectAll("*").remove(); } return;
   if (M.kind !== "world") return;
   gMarks.selectAll("*").remove(); gTrail.selectAll("*").remove();
   marker(gMarks, G.home.at, g => { g.append("rect").attr("x", -6).attr("y", -6).attr("width", 12).attr("height", 12).attr("class", "mk-home").attr("transform", "rotate(45)"); g.append("text").attr("class", "mk-label").attr("x", 10).attr("y", 4).text("Waiheke"); });
@@ -2269,7 +2361,7 @@ function rewind(f) {
 /* map pointer handling */
 let BLIND = false;
 function readout(ll) {
-  if (BLIND) return "Instruments off: read the grid";
+  if (BLIND) return "Readout off: read the grid";
   if (isTopo()) return `${Math.round(ll[1] * 1000)} mE  ${Math.round(ll[0] * 1000)} mN · ${Math.round(Math.max(0, T.hAt(ll[1], ll[0])))} m`;
   return `${fmtLLdms(ll)}`;
 }
@@ -2353,7 +2445,7 @@ const panel = $("#panel-scroll");
 let TASK = null;
 const AUTO_BIG = true;
 function clearTask() { document.querySelectorAll(".figscrim").forEach(x => x.remove()); $("#tRuler").hidden = false; gMarks.style("display", null); gTrail.style("display", $("#lyTrail") && !$("#lyTrail").checked ? "none" : null); gTask.selectAll("*").remove(); gHL.selectAll("*").remove(); gTop.selectAll("*").remove(); M.click = null; $("#map").classList.remove("picking"); if (RULER.on) setRuler(false); RULER.cb = null; TASK = null; setBlind(false); }
-function setBlind(on) { BLIND = on; $("#pos").classList.toggle("blind", on); $("#pos").textContent = on ? "Instruments off: read the grid" : "Move over the map"; }
+function setBlind(on) { BLIND = on; $("#pos").classList.toggle("blind", on); $("#pos").textContent = on ? "Readout off: read the grid" : "Move over the map"; }
 
 /* fuel gauge: spring-driven needle with a constant small tremor */
 const GA = { sweep: true, target: -90, cur: -90, vel: 0, started: false, t0: performance.now(), pct: 1, shownPct: 1 };
@@ -2381,8 +2473,8 @@ function updateHUD() {
   $("#hudKm").textContent = fmtKm(S.km) + " km";
   const s = STOPS[Math.min(S.gi, STOPS.length - 1)]; const c = s.caseObj;
   const fs = $("#hudFuel"); if (fs) fs.hidden = true;
-  const rb = $("#runbar i"); if (rb) { const r = runStats(); rb.style.width = r.pct + "%"; $("#runbar").title = `${r.stops} of ${r.total} stops reached`; }
-  { const p = c.part, ps = partStops(p); $("#caseTag").textContent = `Part ${p} · ${c.code} · ${c.title} · stop ${ps.indexOf(s) + 1}/${ps.length}`.toUpperCase(); }
+  const rb = $("#runbar i"); if (rb) { const r = runStats(); rb.style.width = r.pct + "%"; $("#runbar").title = `${r.stops} of ${r.total} places completed`; }
+  { const p = c.part, ps = partStops(p); $("#caseTag").textContent = `Part ${p} · ${c.code} · ${c.title} · ${ps.indexOf(s) + 1} of ${ps.length}`.toUpperCase(); }
   $("#dots").innerHTML = c.stops.map(x => `<i class="${S.journal.includes(x.id) ? "done" : x.gi === S.gi ? "now" : ""}"></i>`).join("");
 }
 function mapKindOf(s) { return s.map === "local" ? "local" : s.map === "topo" ? "topo" : "world"; }
@@ -2404,31 +2496,34 @@ function playStop() {
   const s = STOPS[S.gi]; updateHUD();
   ensureMap(mapKindOf(s));
   if (S.ki === 0) { s.steps.forEach((_, i) => { if (S.qs) delete S.qs[qKey(s, i)]; }); S.stepPts = 0; save(); }
+  if (S.ki === 0 && M.kind === "world") { drawOverlay(null); homeView(); }
   renderStep();
 }
 function stopHeader(s) {
-  const c = s.caseObj; const stopNo = `Stop ${s.si + 1} of ${c.stops.length}`;
-  let card = "";
-  if (s.postcard) {
-    const u = photoUrl(s.photo);
-    card = `<div class="postcard">${u ? `<div class="mystery" style="background-image:url('${u}')"></div><div class="pcap">${creditShort(s.photo)}</div>` : ""}<div class="note" data-read>${SAY}${esc(s.postcard)}</div></div>`;
-  } else card = `<p class="brief" data-read>${SAY}${esc(s.brief || "")}</p>`;
-  return `<div><div class="eyebrow">${esc(c.code)} · ${stopNo}</div><h2 class="stop-title">${s.postcard ? esc(s.title || "Next location") : esc(s.place)}</h2></div>${card}`;
+  const c = s.caseObj, ps = partStops(c.part), u = photoUrl(s.photo);
+  const where = s.map === "topo" ? "Kahu Island 1:50 000 topographic sheet (invented)" : s.map === "local" ? "" : "";
+  const text = s.postcard || s.brief || "";
+  const facts = (s.facts || []).length ? `<ul class="facts info">${s.facts.map(f => `<li>${esc(f)}</li>`).join("")}</ul>` : "";
+  return `<div><div class="eyebrow">Part ${c.part} · ${esc(c.code)} · place ${ps.indexOf(s) + 1} of ${ps.length}</div><h2 class="stop-title">${esc(s.place)}</h2>${where ? `<div class="hintline">${where}</div>` : ""}</div>`;
 }
-const KIND = { sort: "Sort it", order: "Put in order", intro: "Briefing", pin: "Pin it", coords: "Coordinate lock", compass: "Compass course", mc: "Quick check", measure: "Scale ruler", num: "Calculate", dms: "Degrees · minutes · seconds", country: "Map reading", pick: "Map reading", gridref: "Grid reference", profile: "Cross-section" };
+function stopInfo(s) {
+  const u = photoUrl(s.photo), text = s.postcard || s.brief || "", facts = (s.facts || []).length ? `<ul class="facts info">${s.facts.map(f => `<li>${esc(f)}</li>`).join("")}</ul>` : "";
+  return `<details class="infocard" open><summary>Information about this place</summary>${u ? `<div class="infophoto" style="background-image:url('${u}')"></div><div class="pcap">${creditShort(s.photo)}</div>` : ""}${text ? `<p class="note" data-read>${SAY}${esc(text)}</p>` : ""}${facts}</details>`;
+}
+const KIND = { sort: "Sort", order: "Put in order", intro: "Information", pin: "Locate on the map", coords: "Plot coordinates", compass: "Direction", mc: "Multiple choice", measure: "Measure distance", num: "Calculate", dms: "Read latitude and longitude", country: "Map reading", pick: "Map reading", gridref: "Grid reference", profile: "Cross-section" };
 function renderStep() {
   clearTask(); stopSpeech();
   const s = STOPS[S.gi]; const st = s.steps[S.ki];
   S.partPos = S.partPos || {}; S.partPos[partOf(s)] = { gi: S.gi, ki: S.ki };
-  if (!st) return arrive();
+  if (!st) { const fs = !S.journal.includes(s.id); if (fs) S.journal.push(s.id); save(); return leave(); }
   if (M.kind === "world") syncOverlay(s);
   const n = s.steps.length;
   const kindName = st.kind || KIND[st.type];
-  panel.innerHTML = stopHeader(s) + `<section class="task" id="task"><div class="task-head"><span class="task-kind">${kindName}</span><span class="task-count">Task ${S.ki + 1}/${n}</span>${st.type !== "intro" ? `<button type="button" class="skipbtn noread" id="btnSkip">Skip</button>` : ""}</div>${figHTML(val(st.fig))}<div id="taskBody"></div><div id="skipConfirm"></div></section>`;
+  panel.innerHTML = stopHeader(s, true) + `<section class="task" id="task"><div class="task-head"><span class="task-kind">${kindName}</span><span class="task-count">${st.type === "intro" ? "Information" : `Question ${s.steps.slice(0, S.ki).filter(x => x.type !== "intro").length + 1} of ${s.steps.filter(x => x.type !== "intro").length}`}</span>${st.type !== "intro" ? `<button type="button" class="skipbtn noread" id="btnSkip">Skip</button>` : ""}</div>${figHTML(val(st.fig))}<div id="taskBody"></div><div id="skipConfirm"></div></section>` + stopInfo(s);
   bindFigs(panel);
   panel.scrollTop = 0;
   { const f = panel.querySelector("#task figure.fig"); const fk = st.fig ? STOPS[S.gi].id + ":" + String(JSON.stringify(st.fig) || st.fig).slice(0, 200) : ""; window.__seenFig = window.__seenFig || new Set(); const firstSight = fk && !window.__seenFig.has(fk); if (fk) window.__seenFig.add(fk); if (f && AUTO_BIG && firstSight) { const q = st.prompt || st.q; if (!$("#modal").innerHTML) enlargeFig(f, val(q) || ""); } }
-  TASK = { step: st, stop: s, tries: 0, hint: false, done: false };
+  TASK = { step: st, stop: s, tries: 0, hint: false, done: false, cost: costOf(st) };
   const locating = ["pin", "coords", "dms", "country", "pick"].includes(st.type);
   gMarks.style("display", locating ? "none" : null); gTrail.style("display", locating || !$("#lyTrail").checked ? "none" : null);
   if (st.blind) setBlind(true);
@@ -2464,7 +2559,7 @@ function askSkip(body, st) {
 function award() {
   if (!TASK || TASK.scored) return 0; TASK.scored = true;
   const s = STOPS[S.gi]; if (s.caseObj.id === "c0") return 0;
-  const pts = Math.max(0, QPTS - WRONG_COST * (TASK.wrong || 0));
+  const pts = Math.max(0, QPTS - ((TASK && TASK.cost) || WRONG_COST) * (TASK.wrong || 0));
   S.qs = S.qs || {}; S.qs[qKey(s, S.ki)] = pts; S.stepPts += pts; if (!TASK.wrong) S.firstRight = (S.firstRight || 0) + 1;
   updateHUD(); save(); return pts;
 }
@@ -2499,15 +2594,15 @@ function openTeach(focus, back = "task") {
   const s = STOPS[Math.min(S.gi, STOPS.length - 1)], c = s.caseObj, ids = TL.CASES[c.id];
   let cur = focus && TL.L[focus] ? focus : ids[0];
   const others = Object.keys(TL.L).filter(k => !ids.includes(k));
-  openModal(`<div class="sheet teach-sheet" role="dialog" aria-label="Teach area"><button class="close-x" type="button" aria-label="Back to the case" id="cx">×</button>
+  openModal(`<div class="sheet teach-sheet" role="dialog" aria-label="Teach area"><button class="close-x" type="button" aria-label="Back to the question" id="cx">×</button>
     <div class="sheet-pad">
-      <div><div class="eyebrow">Teach area · ${esc(c.code)} · ${esc(c.title)}</div><h2 class="stop-title">Learn the skill, then get back in the run</h2></div>
+      <div><div class="eyebrow">Teach area · ${esc(c.code)} · ${esc(c.title)}</div><h2 class="stop-title">Revise the skill, then go back to the question</h2></div>
       <div class="teach-grid">
-        <nav class="teach-nav" aria-label="Lessons"><div class="eyebrow">Skills in this case</div>${ids.map(k => `<button type="button" class="tnav" data-k="${k}">${esc(TL.L[k].title)}</button>`).join("")}
+        <nav class="teach-nav" aria-label="Lessons"><div class="eyebrow">Skills in this section</div>${ids.map(k => `<button type="button" class="tnav" data-k="${k}">${esc(TL.L[k].title)}</button>`).join("")}
           <details><summary class="eyebrow">All other skills</summary>${others.map(k => `<button type="button" class="tnav" data-k="${k}">${esc(TL.L[k].title)}</button>`).join("")}</details></nav>
         <div class="teach-body" id="teachBody"></div>
       </div>
-      <div class="row"><button class="btn" type="button" id="tBack">${back === "intro" ? "Back to the case" : back === "restart" ? "Restart the case" : "Back to the case"} →</button></div>
+      <div class="row"><button class="btn" type="button" id="tBack">${back === "intro" ? "Back to the section" : "Back to the question"} →</button></div>
     </div></div>`, false);
   const show = k => {
     cur = k; const l = TL.L[k];
@@ -2519,7 +2614,7 @@ function openTeach(focus, back = "task") {
     document.querySelectorAll(".tcheck .opt").forEach(b => b.onclick = () => {
       const ok = +b.dataset.i === ch.answer; b.classList.add(ok ? "right" : "wrong");
       const f = document.querySelector(".tcheck .tfb"); f.className = "tfb fb " + (ok ? "good" : "bad");
-      f.innerHTML = ok ? `<b>Yes.</b> ${esc(ch.explain)} You're ready: head back to the case.` : `Not that one. Re-read the lesson above and try again.`;
+      f.innerHTML = ok ? `<b>Yes.</b> ${esc(ch.explain)} You're ready: go back to the question.` : `Not that one. Re-read the lesson above and try again.`;
       if (ok) document.querySelectorAll(".tcheck .opt").forEach(x => x.disabled = true);
     });
   };
@@ -2529,20 +2624,8 @@ function openTeach(focus, back = "task") {
   $("#tBack").onclick = done; $("#cx").onclick = done;
 }
 $("#btnTeach").onclick = () => { if ($("#modal").innerHTML && !$("#modal").dataset.dismiss) return; openTeach(currentLesson()); };
-const fuelNote = () => { if (STOPS[S.gi].caseObj.id === "c0") return ""; const left = Math.max(0, QPTS - WRONG_COST * ((TASK && TASK.wrong) || 0)); const wrongN = (TASK && TASK.wrong) || 0; if (QPTS - WRONG_COST * (wrongN - 1) <= 0) return ` <span class="cost">This question is now worth 0, but keep going: you still need the right answer to move on (or Skip).</span>`; return ` <span class="cost">−${WRONG_COST} points: this question is now worth ${left}</span>`; };
-function breakdown() {
-  const s = STOPS[S.gi], c = s.caseObj, first = STOPS.find(x => x.ci === s.ci);
-  S.breakdowns++; S.breakByCase[s.ci] = (S.breakByCase[s.ci] || 0) + 1;
-  S.score -= S.stepPts; S.stepPts = 0;
-  S.gi = first.gi; S.ki = 0; S.fuel = FUEL; S.caseWrong = 0; GA.sweep = true; save(); clearTask(); updateHUD();
-  openModal(`<div class="sheet" style="width:min(560px,100%)"><div class="sheet-pad" data-read>
-    <div class="eyebrow noread">${esc(c.code)} · Engine failure</div><h2 class="big-title" style="font-size:40px">${SAY}Out of fuel!</h2>
-    <p style="margin:0;font-size:17px">Too many wrong answers. You're back at the start of <b>${esc(c.title)}</b>.</p>
-    <ul class="facts"><li>You replay <b>this case only</b>. Other cases are safe.</li><li>Points from this case are reset (the −${PENALTY} penalties stay).</li><li>Answer options have been shuffled.</li></ul>
-    <div class="row noread"><button class="btn" id="btnRe" type="button">Refuel and restart the case →</button><button class="btn ghost" id="btnReT" type="button">Study the skills first</button></div></div></div>`, false);
-  $("#btnRe").onclick = () => { closeModal(); start(); }; $("#btnRe").focus();
-  $("#btnReT").onclick = () => openTeach(null, "restart");
-}
+const fuelNote = () => { if (STOPS[S.gi].caseObj.id === "c0") return ""; const left = Math.max(0, QPTS - ((TASK && TASK.cost) || WRONG_COST) * ((TASK && TASK.wrong) || 0)); const wrongN = (TASK && TASK.wrong) || 0; if (QPTS - ((TASK && TASK.cost) || WRONG_COST) * (wrongN - 1) <= 0) return ` <span class="cost">This question is now worth 0, but keep going: you still need the right answer to move on (or Skip).</span>`; return ` <span class="cost">−${((TASK && TASK.cost) || WRONG_COST)} points: this question is now worth ${left}</span>`; };
+function breakdown() { /* removed */ }
 function shuffled(n) { const a = [...Array(n).keys()]; for (let i = n - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function nextBtn(body, label = "Next") {
   const d = document.createElement("div"); d.className = "row"; d.innerHTML = `<button class="btn" type="button" id="btnNext">${label} →</button>`; body.appendChild(d);
@@ -2562,12 +2645,12 @@ function runStats() {
 }
 function progressHTML() {
   const r = runStats();
+  const ans = p => partStops(p).reduce((a, s) => a + s.steps.filter((st, i) => st.type !== "intro" && (S.qs || {})[qKey(s, i)] != null).length, 0);
+  const tot = PARTS.reduce((a, p) => a + partN(p.n), 0), done = PARTS.reduce((a, p) => a + ans(p.n), 0), pct = tot ? Math.round(done / tot * 100) : 0;
   return `<div class="runprog">
-    ${PARTS.map(p => { const ps = partStops(p.n), d = ps.filter(s => S.journal.includes(s.id)).length; return `<div class="rp-row"><span>Part ${p.n}</span><b>${d} of ${ps.length} stops${S.partDone && S.partDone[p.n] ? ` · ${partPct(p.n)}%` : ""}</b></div>`; }).join("")}
-    <div class="rp-row"><span>All parts</span><b>${r.stops} of ${r.total} stops · ${r.pct}%</b></div>
-    <div class="rp-bar"><i style="width:${r.pct}%"></i>${G.cases.map((c, i) => { const first = STOPS.findIndex(x => x.ci === i); return i ? `<em style="left:${first / r.total * 100}%" title="${esc(c.title)}"></em>` : ""; }).join("")}</div>
-    <div class="rp-sub">${r.total - r.stops ? `${r.total - r.stops} stops to go` : "You made it to the end!"}</div>
-    ${scoreStats().live != null ? `<div class="rp-row"><span>Score so far</span><b>${scoreStats().live}% · ${scoreStats().pts} of ${scoreStats().n * QPTS} points</b></div>` : ""}
+    ${PARTS.map(p => `<div class="rp-row"><span>Part ${p.n}</span><b>${ans(p.n)} of ${partN(p.n)} questions${S.partDone && S.partDone[p.n] ? ` · score ${partPct(p.n)}%` : ""}</b></div>`).join("")}
+    <div class="rp-row"><span>All parts</span><b>${done} of ${tot} questions · ${pct}%</b></div>
+    <div class="rp-bar"><i style="width:${pct}%"></i></div>
     <div class="rp-row"><span>Skills ticked off</span><b>${r.got} of ${r.skills} · ${r.spct}%</b></div>
     <div class="rp-bar sk"><i style="width:${r.spct}%"></i></div>
   </div>`;
@@ -3042,29 +3125,27 @@ async function flyLeg(from, to, legKm, msg) {
 /* ── case intro / done ── */
 function showCaseIntro(c) {
   clearTask();
-  const ci = G.cases.indexOf(c);
-  panel.innerHTML = `<div class="eyebrow">${esc(c.code)}</div><h2 class="stop-title">${esc(c.title)}</h2><p>${esc(c.blurb)}</p>`;
-  openModal(`<div class="sheet"><div class="case-hero" style="${photoBg(c.photo, 0, 0)}"><span class="code">${esc(c.code)}</span><button class="close-x" type="button" aria-label="Close" id="cx">×</button></div>
-    <div class="sheet-pad" data-read><div class="eyebrow noread">${esc(c.region)} · ${c.stops.length} stops</div><h2 class="big-title">${SAY}${esc(c.title)}</h2>
+  const ci = G.cases.indexOf(c), secs = partCases(c.part);
+  panel.innerHTML = `<div class="eyebrow">Part ${c.part} · ${esc(c.code)}</div><h2 class="stop-title">${esc(c.title)}</h2><p>${esc(c.blurb)}</p>`;
+  openModal(`<div class="sheet"><div class="sheet-pad" data-read><div class="eyebrow noread">Part ${c.part} · ${esc(PARTS[c.part - 1].title)} · section ${secs.indexOf(c) + 1} of ${secs.length}</div><h2 class="big-title">${SAY}${esc(c.title)}</h2>
     <p style="font-size:17px;max-width:62ch;margin:0">${esc(c.blurb)}</p>
-    <div class="noread"><div class="eyebrow" style="margin-bottom:6px">Skills in this case</div><div class="chips">${c.skills.map(k => `<span>${esc(k)}</span>`).join("")}</div></div>
-    ${c.id === "c0" ? `<p class="hintline" style="margin:0">The warm-up is practice: it isn't scored.</p>` : `<div class="fuelbrief"><span>Each question is worth <b>${QPTS} points</b>. Keep going until you get it right: every wrong answer costs <b>${WRONG_COST}</b>. You can <b>skip</b> a question, but it scores 0. Your percentage builds as you go.</span></div>`}
-    <div class="row noread"><button class="btn" id="btnGo" type="button">${c.id === "c0" ? "Start the warm-up" : "Start the case"} →</button><button class="btn ghost" id="btnTeachIntro" type="button">Teach me the skills first</button></div></div></div>`, false);
-  const go = () => { goFull(); closeModal(); if (S.seenCase !== ci) { S.fuel = FUEL; S.caseWrong = 0; GA.sweep = true; } S.seenCase = ci; save(); updateHUD(); playStop(); };
-  $("#btnGo").onclick = go; $("#cx").onclick = go; $("#btnGo").focus();
+    <div class="noread"><div class="eyebrow" style="margin-bottom:6px">Skills tested in this section</div><div class="chips">${c.skills.map(k => `<span>${esc(k)}</span>`).join("")}</div></div>
+    <div class="fuelbrief"><span>Each question is worth <b>${QPTS} points</b>. Keep answering until you get it right: each wrong answer costs <b>${WRONG_COST}</b> points, or <b>5</b> on a four-option multiple choice, so guessing doesn't pay. You can <b>skip</b> a question, but it scores 0.</span></div>
+    <div class="row noread"><button class="btn" id="btnGo" type="button">Begin →</button><button class="btn ghost" id="btnTeachIntro" type="button">Revise the skills first</button></div></div></div>`, false);
+  const go = () => { goFull(); closeModal(); if (S.seenCase !== ci) { S.caseWrong = 0; } S.seenCase = ci; save(); updateHUD(); if (M.kind === "world") homeView(); playStop(); };
+  $("#btnGo").onclick = go; $("#btnGo").focus();
   $("#btnTeachIntro").onclick = () => openTeach(null, "intro");
 }
+
 function showCaseDone(c, then) {
-  const got = caseGot(c), max = caseMax(c);
+  const got = caseGot(c), max = caseMax(c), i = G.cases.indexOf(c);
   openModal(`<div class="sheet"><div class="sheet-pad">
-    <div class="eyebrow">${esc(c.code)} · Case closed</div><h2 class="big-title">${esc(c.title)}</h2>
-    <div class="statgrid"><div><b>${max ? Math.floor(got / max * 100) : 0}%</b><span>${got} of ${max} points</span></div><div><b>${S.wrongByCase[G.cases.indexOf(c)] || 0}</b><span>wrong answers</span></div><div><b>${S.skipByCase[G.cases.indexOf(c)] || 0}</b><span>skipped</span></div></div>
-    <div class="journal-grid">${c.stops.map(s => `<div class="jcard"><div class="ph" style="${photoBg(s.arrivePhoto || s.photo, s.at[0], s.at[1])}"></div><div class="bd"><span class="nm">${esc(s.place)}</span><span class="co">${s.map === "topo" ? "Kahu Island" : fmtLL(s.at)}</span></div></div>`).join("")}</div>
-    ${progressHTML()}
-    <p style="margin:0" data-read>${SAY}${esc(c.outro || "On to the next case.")}</p>
-    <div class="row"><button class="btn" id="btnGo" type="button">Next case →</button></div></div></div>`, false);
+    <div class="eyebrow">Part ${c.part} · ${esc(c.code)} complete</div><h2 class="big-title">${esc(c.title)}</h2>
+    <div class="statgrid"><div><b>${max ? Math.round(got / max * 100) : 0}%</b><span>${got} of ${max} points</span></div><div><b>${S.wrongByCase[i] || 0}</b><span>wrong answers</span></div><div><b>${S.skipByCase[i] || 0}</b><span>skipped</span></div></div>
+    <div class="row"><button class="btn" id="btnGo" type="button">Next section →</button></div></div></div>`, false);
   $("#btnGo").onclick = () => { closeModal(); then(); }; $("#btnGo").focus();
 }
+
 function startPart(p, opts = {}) {
   const ps = partStops(p); let first = ps[0];
   if (p === 1 && opts.skipWarm) { first = ps.find(x => x.caseObj.id !== "c0"); STOPS.filter(x => x.caseObj.id === "c0").forEach(x => { if (!S.journal.includes(x.id)) S.journal.push(x.id); }); }
@@ -3105,7 +3186,7 @@ function showPartDone(p) {
     <div class="cert"><div style="font-family:var(--f-hand);font-size:36px;line-height:1">${esc(S.agent || "Player")}</div>
       <div>finished Part ${p} with a score of</div><div class="cert-pct">${pct}%</div>
       <div class="statgrid"><div><b>${partGot(p)}</b><span>of ${partMax(p)} points</span></div><div><b>${partSum(p, S.wrongByCase)}</b><span>wrong answers</span></div><div><b>${partSum(p, S.skipByCase)}</b><span>skipped</span></div></div>
-      <div class="guess-report"><table><tr><th>Case</th><th>Score</th><th>Wrong</th><th>Skipped</th></tr>${partCases(p).filter(c => c.id !== "c0").map(c => { const i = G.cases.indexOf(c); return `<tr><td>${esc(c.code)} ${esc(c.title)}</td><td>${caseMax(c) ? Math.floor(caseGot(c) / caseMax(c) * 100) : 0}%</td><td>${S.wrongByCase[i] || 0}</td><td>${S.skipByCase[i] || 0}</td></tr>`; }).join("")}</table></div>
+      <div class="guess-report"><table><tr><th>Section</th><th>Score</th><th>Wrong</th><th>Skipped</th></tr>${partCases(p).filter(c => c.id !== "c0").map(c => { const i = G.cases.indexOf(c); return `<tr><td>${esc(c.code)} ${esc(c.title)}</td><td>${caseMax(c) ? Math.round(caseGot(c) / caseMax(c) * 100) : 0}%</td><td>${S.wrongByCase[i] || 0}</td><td>${S.skipByCase[i] || 0}</td></tr>`; }).join("")}</table></div>
       <div class="mono" style="font-size:13px;color:var(--ink-soft)">${new Date().toLocaleDateString("en-NZ", { day: "numeric", month: "long", year: "numeric" })}</div></div>
     ${low ? `<div class="again" data-read>${SAY}<b>Aim for 70% or more.</b> Use the Teach button on the skills that tripped you up, then redo Part ${p}. Second attempts are usually a lot stronger.</div>` : `<p style="margin:0" data-read>${SAY}<b>Well done.</b> ${p < 3 ? "On to the next part when you are ready." : ""}</p>`}
     <p class="hintline" style="margin:0">Take a screenshot to keep this result.</p>
@@ -3120,25 +3201,25 @@ function showFinale() {
   ensureMap("world"); drawOverlay(null); drawProgressMarks(); homeView();
   const sc = scoreStats(); $("#hudScore").textContent = sc.final + "%"; $("#hudScore").title = "Overall score";
   const done = STOPS.filter(s => S.journal.includes(s.id)).length;
-  panel.innerHTML = `<div class="eyebrow">Run complete</div><h2 class="stop-title">You made it to the end.</h2><p>The yellow dots show every place you reached.</p><div class="row"><button class="btn" id="btnCert" type="button">View certificate</button><button class="btn ghost" id="btnReplay" type="button">Start page</button></div>`;
+  panel.innerHTML = `<div class="eyebrow">All parts complete</div><h2 class="stop-title">Your results</h2><div class="row"><button class="btn" id="btnCert" type="button">View results</button><button class="btn ghost" id="btnReplay" type="button">Start page</button></div>`;
   $("#btnCert").onclick = cert; $("#btnReplay").onclick = titleScreen;
   function cert() {
     const lowParts = PARTS.filter(p => partPct(p.n) < 70);
     openModal(`<div class="sheet"><button class="close-x" type="button" aria-label="Close" id="cx">×</button><div class="sheet-pad">
       <p style="font-size:17px;margin:0" data-read>${SAY}${esc(G.finale)}</p>
-      <div class="cert"><div class="eyebrow">Skills Testing · Senior Geography · Certificate</div>
+      <div class="cert"><div class="eyebrow">Skills Testing · Senior Geography · Results</div>
         <div style="font-family:var(--f-hand);font-size:40px;line-height:1">${esc(S.agent || "Player")}</div>
         <div>finished all three parts with an overall score of</div>
         <div class="cert-pct">${sc.final}%</div>
         <div class="statgrid">${PARTS.map(p => `<div><b>${partPct(p.n)}%</b><span>Part ${p.n}: ${esc(p.title)}</span></div>`).join("")}</div>
         <div class="statgrid"><div><b>${sc.pts}</b><span>of ${TOTAL_MAX} points</span></div><div><b>${S.firstRight || 0}</b><span>right first time</span></div><div><b>${S.wrong || 0}</b><span>wrong answers</span></div><div><b>${S.skips || 0}</b><span>skipped</span></div><div><b>${runStats().got}/${runStats().skills}</b><span>skills ticked off</span></div></div>
-        <div class="guess-report"><div class="eyebrow">Case report</div><table><tr><th>Case</th><th>Score</th><th>Wrong</th><th>Skipped</th></tr>${G.cases.map((c, i) => c.id === "c0" ? "" : `<tr><td>Part ${c.part} · ${esc(c.code)} ${esc(c.title)}</td><td>${caseMax(c) ? Math.floor(caseGot(c) / caseMax(c) * 100) : 0}%</td><td>${S.wrongByCase[i] || 0}</td><td>${S.skipByCase[i] || 0}</td></tr>`).join("")}</table></div>
-        <div class="mono" style="font-size:13px;color:var(--ink-soft)">Issued at Oneroa, Waiheke Island · ${new Date().toLocaleDateString("en-NZ", { day: "numeric", month: "long", year: "numeric" })}</div></div>
+        <div class="guess-report"><div class="eyebrow">Section report</div><table><tr><th>Section</th><th>Score</th><th>Wrong</th><th>Skipped</th></tr>${G.cases.map((c, i) => c.id === "c0" ? "" : `<tr><td>Part ${c.part} · ${esc(c.code)} ${esc(c.title)}</td><td>${caseMax(c) ? Math.round(caseGot(c) / caseMax(c) * 100) : 0}%</td><td>${S.wrongByCase[i] || 0}</td><td>${S.skipByCase[i] || 0}</td></tr>`).join("")}</table></div>
+        <div class="mono" style="font-size:13px;color:var(--ink-soft)">${new Date().toLocaleDateString("en-NZ", { day: "numeric", month: "long", year: "numeric" })}</div></div>
       ${lowParts.length ? `<div class="again" data-read>${SAY}<b>Aim for 70% or more in every part.</b> ${lowParts.length === 1 ? `Part ${lowParts[0].n} is` : `Parts ${lowParts.map(p => p.n).join(" and ")} are`} below 70%. Use the Teach button on the skills that tripped you up, then redo ${lowParts.length === 1 ? "it" : "them"}.<div class="row" style="margin-top:8px">${lowParts.map(p => `<button class="btn" type="button" data-part="${p.n}">Redo Part ${p.n} →</button>`).join("")}</div></div>` : ""}
-      <p class="hintline" style="margin:0">Take a screenshot to keep your certificate.</p>
-      <div class="row"><button class="btn ghost" id="btnJ" type="button">Open journal</button><button class="btn ghost" id="btnHome2" type="button">Start page</button></div></div></div>`);
+      <p class="hintline" style="margin:0">Take a screenshot to keep your results.</p>
+      <div class="row"><button class="btn ghost" id="btnHome2" type="button">Start page</button></div></div></div>`);
     bindPartButtons($("#modal"));
-    $("#cx").onclick = closeModal; $("#btnJ").onclick = () => { closeModal(); openJournal(); }; $("#btnHome2").onclick = () => { closeModal(); titleScreen(); };
+    $("#cx").onclick = closeModal; $("#btnHome2").onclick = () => { closeModal(); titleScreen(); };
   }
   cert();
 }
@@ -3178,7 +3259,7 @@ function openCredits() {
   const used = Object.keys(CREDITS);
   openModal(`<div class="sheet"><button class="close-x" type="button" aria-label="Close" id="cx">×</button><div class="sheet-pad">
     <div class="eyebrow">Credits</div><h2 class="stop-title">Photos, maps and data</h2>
-    <p style="margin:0">Apart from one photo supplied by your teacher, every photo, satellite image and real map in this game is shared under a free licence or is public domain, via Wikimedia Commons. Thank you to the photographers and map-makers.</p>
+    <p style="margin:0">Apart from one photo supplied by your teacher, every photo, satellite image and real map in this test is shared under a free licence or is public domain, via Wikimedia Commons. Thank you to the photographers and map-makers.</p>
     <ul class="credits">${used.map(id => { const c = CREDITS[id]; return `<li><b>${esc(c.desc || id)}</b>: ${esc(c.author)}, ${esc(c.license)}.${c.page ? ` <a href="${esc(c.page)}" target="_blank" rel="noopener">Source</a>` : ""}</li>`; }).join("")}</ul>
     <div class="eyebrow">Maps and data</div>
     <ul class="credits">${G.dataCredits.map(t => `<li>${esc(t)}</li>`).join("")}</ul></div></div>`);
@@ -3188,8 +3269,8 @@ function openMenu() {
   const unlocked = Math.max(...STOPS.filter(s => S.journal.includes(s.id)).map(s => s.ci), S.finished ? G.cases.length - 1 : STOPS[Math.min(S.gi, STOPS.length - 1)].ci);
   openModal(`<div class="sheet" style="width:min(560px,100%)"><button class="close-x" type="button" aria-label="Close" id="cx">×</button><div class="sheet-pad">
     <div class="eyebrow">Menu</div><h2 class="stop-title">${esc(S.agent || "Menu")}</h2>
-    <div class="opts"><button class="opt" type="button" id="mP">Start page: choose a part</button><button class="opt" type="button" id="mS">Skills checklist &amp; progress</button><button class="opt" type="button" id="mJ">Field journal</button><button class="opt" type="button" id="mC">Photo, map &amp; data credits</button><button class="opt" type="button" id="mH">How to play</button></div>
-    <div class="eyebrow">Jump to a case (best done in order within a part)</div>
+    <div class="opts"><button class="opt" type="button" id="mP">Start page: choose a part</button><button class="opt" type="button" id="mS">Skills checklist &amp; progress</button><button class="opt" type="button" id="mJ" hidden>Field journal</button><button class="opt" type="button" id="mC">Photo, map &amp; data credits</button><button class="opt" type="button" id="mH">How to play</button></div>
+    <div class="eyebrow">Jump to a section (best done in order within a part)</div>
     <div class="opts">${G.cases.map((c, i) => `<button class="opt" type="button" data-c="${i}" ${i > unlocked && !G.openAccess ? "disabled style='opacity:.45'" : ""}>Part ${c.part} · ${esc(c.code)} · ${esc(c.title)}${i > unlocked && !G.openAccess ? " (locked)" : ""}</button>`).join("")}</div>
     <div id="rs"><button class="btn ghost" type="button" id="mR">Start again from the beginning</button></div></div></div>`);
   $("#cx").onclick = closeModal; $("#mP").onclick = () => { closeModal(); titleScreen(); }; $("#mS").onclick = openSkills; $("#mJ").onclick = openJournal; $("#mC").onclick = openCredits; $("#mH").onclick = howTo;
@@ -3198,7 +3279,7 @@ function openMenu() {
     S.gi = first.gi; S.ki = 0; S.finished = false; S.seenCase = -1; save(); closeModal(); M.kind = null; start();
   });
   $("#mR").onclick = () => {
-    $("#rs").innerHTML = `<div class="confirm-box"><b>Start again?</b> Your score, journal and progress will be wiped.<div class="row"><button class="btn dark" type="button" id="yes">Yes, start again</button><button class="btn ghost" type="button" id="no">Keep my progress</button></div></div>`;
+    $("#rs").innerHTML = `<div class="confirm-box"><b>Start again?</b> Your scores and progress will be wiped.<div class="row"><button class="btn dark" type="button" id="yes">Yes, start again</button><button class="btn ghost" type="button" id="no">Keep my progress</button></div></div>`;
     $("#no").onclick = closeModal;
     $("#yes").onclick = () => { const a = S.agent; S = fresh(); S.agent = a; save(); closeModal(); M.kind = null; start(); };
   };
@@ -3207,15 +3288,15 @@ function howTo() {
   openModal(`<div class="sheet" style="width:min(640px,100%)"><button class="close-x" type="button" aria-label="Close" id="cx">×</button><div class="sheet-pad">
     <div class="eyebrow">How to play</div><h2 class="stop-title">How Skills Testing works</h2>
     <ul class="facts" data-read>${SAY}
-      <li><b>Use every resource.</b> Photos, satellite images, maps and graphs appear in the case file. Press <b>Enlarge</b> to see one full size.</li>
+      <li><b>Use every resource.</b> Photos, satellite images, maps and graphs appear beside each question, with information about the place above them. Press <b>Enlarge</b> to see one full size.</li>
       <li><b>The map.</b> Drag to move, scroll or pinch to zoom. Zoom in far and the grid shows minutes, then seconds.</li>
-      <li><b>Instruments off.</b> On some tasks the position readout switches off. You must read the grid yourself.</li>
+      <li><b>Readout off.</b> On some tasks the position readout switches off, so you read the grid yourself.</li>
       <li><b>Rulers.</b> The map ruler measures real distance. On real maps and photos, the figure ruler measures centimetres on your screen: compare it with the scale bar.</li>
-      <li><b>Topo sheet.</b> Switch between Topo, Relief and Aerial views with the buttons at the top of the map.</li>
-      <li><b>Teach area.</b> Press <b>Teach</b> at the top any time, or <b>Teach me the skills first</b> when a case opens. Every two wrong answers you'll be offered a lesson. Your place is kept.</li>
-      <li><b>Scoring.</b> Each question is worth ${QPTS} points. You must get it right to move on: each wrong answer costs ${WRONG_COST} points. Skipping scores 0. Your live percentage is shown at the top; your final percentage is on your certificate.</li>
+      <li><b>Topo sheet.</b> Switch between Topo, Relief and Aerial views with the buttons at the bottom of the map.</li>
+      <li><b>Teach area.</b> Press <b>Teach</b> at the top any time, or <b>Revise the skills first</b> when a section opens. Every two wrong answers you'll be offered a lesson. Your place is kept.</li>
+      <li><b>Scoring.</b> Each question is worth ${QPTS} points. You must get it right to move on: each wrong answer costs ${WRONG_COST} points (5 on a four-option multiple choice, 3 on direction questions). Skipping scores 0. Your live percentage is shown at the top; you get a percentage at the end of each part and an overall result.</li>
       <li>Progress saves on this device. Press a speaker button to hear text read aloud.</li>
-    </ul><div class="row"><button class="btn" id="ok" type="button">Back to the case</button></div></div></div>`);
+    </ul><div class="row"><button class="btn" id="ok" type="button">Back to the question</button></div></div></div>`);
   $("#cx").onclick = closeModal; $("#ok").onclick = closeModal;
 }
 $("#btnJournal").onclick = openJournal;
@@ -3236,14 +3317,14 @@ function titleScreen() {
     <div class="sheet-pad">
       <div class="eyebrow">Senior geography skills · Waiheke</div>
       <h1 class="big-title">Skills Testing</h1>
-      <p style="margin:0;font-family:var(--f-head);font-weight:800;font-size:24px;letter-spacing:.02em">Can you make it to the end?</p>
+      <p style="margin:0;font-family:var(--f-head);font-weight:800;font-size:22px;letter-spacing:.02em">NCEA Level 3 geography skills</p>
       <p style="margin:0;font-size:16.5px" data-read>${SAY}${esc(G.intro)}</p>
       <div class="field"><label for="agentName">Your first name</label><input id="agentName" maxlength="24" autocomplete="off" value="${esc(S.agent)}" placeholder="e.g. Aroha"></div>
       <div class="parts">${PARTS.map(p => partBox(p.n)).join("")}</div>
-      ${allDone ? `<div class="row"><button class="btn" id="btnCertT" type="button">View your overall certificate →</button></div>` : ""}
+      ${allDone ? `<div class="row"><button class="btn" id="btnCertT" type="button">View your overall results →</button></div>` : ""}
       <p class="hintline" style="margin:0">${esc(G.timeNote)}</p>
       ${progressHTML()}
-      <div><div class="eyebrow" style="margin-bottom:6px">Skills in this run · ticked off automatically as you answer correctly</div>${skillsHTML()}</div>
+      <div><div class="eyebrow" style="margin-bottom:6px">Skills tested · ticked off automatically as you answer correctly</div>${skillsHTML()}</div>
     </div></div>`, false);
   const nameOk = () => { const v = $("#agentName").value.trim(); if (!v) { $("#agentName").focus(); $("#agentName").style.borderColor = "var(--alert)"; return false; } S.agent = v; save(); return true; };
   bindPartButtons($("#modal"), nameOk);
